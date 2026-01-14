@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/bitcoin--v1.png">
+    
+    <meta property="og:title" content="SOTP Pro | 2026 Mining & AI Dashboard">
+    <meta property="og:description" content="Institutional-grade valuation model for Bitcoin Miners and Energy Assets.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1200&q=80">
+    <meta property="og:type" content="website">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&w=1200&q=80">
+
+    <title>SOTP Pro | 2026 Valuation</title>
+    
+    <style>
+        :root { --primary: #3b82f6; --bg: #0b0f1a; --card: #161e2d; --text: #e2e8f0; --accent: #10b981; }
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: var(--bg); 
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0b0f1a 100%);
+            color: var(--text); 
+            padding: 20px; 
+            margin: 0; 
+            min-height: 100vh;
+        }
+        .container { max-width: 1000px; margin: 40px auto; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #2d3748; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        .preset-btn { background: #2d3748; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; border: 1px solid transparent; }
+        .preset-btn:hover { background: var(--primary); border-color: #60a5fa; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .section { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border-left: 4px solid var(--primary); }
+        label { display: block; font-size: 0.7rem; font-weight: bold; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .val-display { float: right; color: var(--primary); font-family: monospace; font-size: 1rem; }
+        input[type="range"] { width: 100%; margin: 8px 0 15px 0; accent-color: var(--primary); cursor: pointer; }
+        .dashboard { margin-top: 30px; display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 15px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #334155; }
+        .price-hero { font-size: 2.5rem; font-weight: 900; color: #fff; margin: 5px 0; }
+        .target-card { border-top: 4px solid var(--accent); }
+        .market-info { font-size: 0.8rem; color: #94a3b8; margin-top: 10px; font-weight: 500; }
+        .upside-tag { font-weight: bold; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem; }
+        .pos { color: #10b981; } .neg { color: #ef4444; }
+        
+        @media (max-width: 768px) {
+            .grid, .presets, .dashboard { grid-template-columns: 1fr; }
+        }
+ /* Navigation Bar */
+        .nav-bar { 
+            background: rgba(22, 30, 45, 0.8); 
+            padding: 15px 30px; 
+            display: flex; gap: 25px; 
+            border-bottom: 1px solid #2d3748;
+            backdrop-filter: blur(10px);
+        }
+.nav-bar a { color: #94a3b8; text-decoration: none; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+.nav-bar a:hover, .nav-bar a.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+<div class="nav-bar">
+    <a href="index.html">Main Hub</a>
+    <a href="treasury.html">Treasury Model</a>
+    <a href="sotp.html" class="active">SOTP Pro</a>
+</div>
+<div class="container">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="margin:0; color:#fff;">SOTP Valuation Tool</h2>
+        <p style="color:#64748b; font-size:0.9rem;">Interactive Equity Research Dashboard</p>
+    </div>
+
+    <div class="presets">
+        <button class="preset-btn" onclick="setPreset('MARA')">MARA ($9.91)</button>
+        <button class="preset-btn" onclick="setPreset('CLSK')">CLSK ($11.55)</button>
+        <button class="preset-btn" onclick="setPreset('IREN')">IREN ($42.70)</button>
+        <button class="preset-btn" onclick="setPreset('HIVE')">HIVE ($2.73)</button>
+    </div>
+
+    <div class="grid">
+        <div class="section">
+            <label>Market & Asset Floor</label>
+            <label>BTC Price ($)<span class="val-display" id="btcPriceVal"></span></label>
+            <input type="range" id="btcPrice" min="50000" max="250000" step="1000" value="78000">
+            <label>BTC HODL (Coins)<span class="val-display" id="btcHodlVal"></span></label>
+            <input type="range" id="btcHodl" min="0" max="70000" step="100" value="52000">
+        </div>
+        <div class="section" style="border-color:var(--accent);">
+            <label>Business Operations</label>
+            <label>Annual Revenue ($M)<span class="val-display" id="revVal"></span></label>
+            <input type="range" id="revenue" min="100" max="4000" step="50" value="1100">
+            <label>EBITDA Margin (%)<span class="val-display" id="marginVal"></span></label>
+            <input type="range" id="margin" min="10" max="95" step="1" value="68">
+        </div>
+        <div class="section" style="border-color:#f59e0b;">
+            <label>Valuation Multiples</label>
+            <label>Target EV/EBITDA<span class="val-display" id="multVal"></span></label>
+            <input type="range" id="multiple" min="2" max="40" step="0.5" value="12">
+            <label>Current Stock Price ($)<span class="val-display" id="currPriceVal"></span></label>
+            <input type="range" id="currPrice" min="0.5" max="150" step="0.1" value="9.91">
+        </div>
+        <div class="section" style="border-color:#ec4899;">
+            <label>Price Target Thresholds</label>
+            <label>PT 1 Capture (%)<span class="val-display" id="pt1Val"></span></label>
+            <input type="range" id="pt1Perc" min="10" max="100" step="5" value="50">
+            <label>PT 2 Capture (%)<span class="val-display" id="pt2Val"></span></label>
+            <input type="range" id="pt2Perc" min="10" max="100" step="5" value="90">
+            <input type="hidden" id="shares" value="378">
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="card" style="background: linear-gradient(145deg, #1e3a8a, #1e40af);">
+            <label style="color:#bfdbfe">Calculated Fair Value</label>
+            <div class="price-hero" id="finalPrice">$0.00</div>
+            <div class="market-info">Implied Mkt Multiple: <span id="impliedMult" style="color:#fff">0x</span></div>
+        </div>
+        <div class="card target-card">
+            <label>Price Target 1</label>
+            <div class="price-hero" id="pt1Price" style="color:var(--accent)">$0.00</div>
+            <div class="market-info"><span id="pt1Upside" class="upside-tag">0%</span></div>
+        </div>
+        <div class="card target-card" style="border-color:#8b5cf6;">
+            <label>Price Target 2</label>
+            <div class="price-hero" id="pt2Price" style="color:#a78bfa">$0.00</div>
+            <div class="market-info"><span id="pt2Upside" class="upside-tag">0%</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Javascript logic remains the same to ensure functionality
+    const data = {
+        MARA: { hodl: 52800, rev: 1100, margin: 68, multiple: 12, shares: 378, curr: 9.91 },
+        CLSK: { hodl: 13000, rev: 950, margin: 72, multiple: 10, shares: 281, curr: 11.55 },
+        IREN: { hodl: 500, rev: 2400, margin: 40, multiple: 22, shares: 328, curr: 42.70 },
+        HIVE: { hodl: 3000, rev: 500, margin: 60, multiple: 15, shares: 238, curr: 2.73 }
+    };
+
+    function setPreset(key) {
+        const p = data[key];
+        document.getElementById('btcHodl').value = p.hodl;
+        document.getElementById('revenue').value = p.rev;
+        document.getElementById('margin').value = p.margin;
+        document.getElementById('multiple').value = p.multiple;
+        document.getElementById('currPrice').value = p.curr;
+        document.getElementById('shares').value = p.shares;
+        update();
+    }
+
+    function update() {
+        const btcPrice = parseFloat(document.getElementById('btcPrice').value);
+        const btcHodl = parseFloat(document.getElementById('btcHodl').value);
+        const revenue = parseFloat(document.getElementById('revenue').value) * 1e6;
+        const margin = parseFloat(document.getElementById('margin').value) / 100;
+        const multiple = parseFloat(document.getElementById('multiple').value);
+        const currPrice = parseFloat(document.getElementById('currPrice').value);
+        const shares = parseFloat(document.getElementById('shares').value) * 1e6;
+        const pt1P = parseFloat(document.getElementById('pt1Perc').value) / 100;
+        const pt2P = parseFloat(document.getElementById('pt2Perc').value) / 100;
+
+        document.getElementById('btcPriceVal').innerText = '$' + btcPrice.toLocaleString();
+        document.getElementById('btcHodlVal').innerText = btcHodl.toLocaleString();
+        document.getElementById('revVal').innerText = '$' + (revenue/1e6).toLocaleString() + 'M';
+        document.getElementById('marginVal').innerText = (margin * 100).toFixed(0) + '%';
+        document.getElementById('multVal').innerText = multiple.toFixed(1) + 'x';
+        document.getElementById('currPriceVal').innerText = '$' + currPrice.toFixed(2);
+        document.getElementById('pt1Val').innerText = (pt1P * 100) + '%';
+        document.getElementById('pt2Val').innerText = (pt2P * 100) + '%';
+
+        const treasuryVal = btcPrice * btcHodl;
+        const ebitda = revenue * margin;
+        const fairValue = (treasuryVal + (ebitda * multiple)) / shares;
+        const impliedM = ((currPrice * shares) - treasuryVal) / ebitda;
+        const pt1 = fairValue * pt1P;
+        const pt2 = fairValue * pt2P;
+
+        document.getElementById('finalPrice').innerText = '$' + fairValue.toFixed(2);
+        document.getElementById('impliedMult').innerText = (ebitda > 0 ? impliedM.toFixed(1) : "N/A") + 'x';
+        
+        const updateUpside = (el, target) => {
+            const up = ((target / currPrice) - 1) * 100;
+            el.innerText = (up >= 0 ? '+' : '') + up.toFixed(0) + '% Upside';
+            el.className = 'upside-tag ' + (up >= 0 ? 'pos' : 'neg');
+        };
+
+        document.getElementById('pt1Price').innerText = '$' + pt1.toFixed(2);
+        updateUpside(document.getElementById('pt1Upside'), pt1);
+        document.getElementById('pt2Price').innerText = '$' + pt2.toFixed(2);
+        updateUpside(document.getElementById('pt2Upside'), pt2);
+    }
+
+    document.querySelectorAll('input').forEach(i => i.addEventListener('input', update));
+    update();
+</script>
+
+</body>
+</html>

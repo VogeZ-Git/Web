@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOTP Pro | Treasury Model</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #3b82f6; --bg: #0b0f1a; --card: #161e2d; --text: #e2e8f0; --accent: #10b981; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0b0f1a 100%);
+            color: var(--text); 
+            margin: 0; padding: 0;
+        }
+        /* Navigation Bar */
+        .nav-bar { 
+            background: rgba(22, 30, 45, 0.8); 
+            padding: 15px 30px; 
+            display: flex; gap: 25px; 
+            border-bottom: 1px solid #2d3748;
+            backdrop-filter: blur(10px);
+        }
+        .nav-bar a { color: #94a3b8; text-decoration: none; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        .nav-bar a:hover, .nav-bar a.active { color: var(--primary); }
+
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        
+        /* Controls Section */
+        .controls { 
+            background: var(--card); 
+            padding: 25px; border-radius: 15px; 
+            border: 1px solid #2d3748; 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px;
+            margin-bottom: 30px;
+        }
+        .control-group { display: flex; flex-direction: column; }
+        label { font-size: 0.7rem; font-weight: bold; color: #94a3b8; margin-bottom: 8px; text-transform: uppercase; }
+        input, select { 
+            background: #1e293b; border: 1px solid #334155; color: white; padding: 10px; border-radius: 6px; outline: none;
+        }
+        button { 
+            background: var(--primary); color: white; border: none; padding: 10px; 
+            border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+
+        /* Summary Plaque */
+        .summary-plaque {
+            background: linear-gradient(145deg, #1e3a8a, #1e40af);
+            padding: 25px; border-radius: 15px; border: 1px solid #334155;
+            margin-bottom: 30px; text-align: center;
+        }
+        .summary-row { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; }
+        .sum-item { display: flex; flex-direction: column; }
+        .sum-label { font-size: 0.75rem; color: #bfdbfe; text-transform: uppercase; }
+        .sum-val { font-size: 1.5rem; font-weight: bold; font-family: monospace; }
+        .highlight { color: var(--accent); }
+
+        /* Table Styling */
+        .table-container { overflow-x: auto; background: var(--card); border-radius: 15px; border: 1px solid #2d3748; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: #1e293b; color: #94a3b8; padding: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #2d3748; }
+        .num { font-family: 'Courier New', monospace; text-align: right; }
+        tr.current { background: rgba(16, 185, 129, 0.1); color: var(--accent); font-weight: bold; }
+        tr.past { color: #64748b; }
+        
+        canvas { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #2d3748; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a href="index.html">Main Hub</a>
+    <a href="treasury.html" class="active">Treasury Model</a>
+    <a href="sotp.html" class="active">SOTP Pro</a>
+</div>
+
+<div class="container">
+    <h2 style="margin-top:0;">Treasury Strategy Projection</h2>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Scenario</label>
+            <select id="scenario" onchange="updateScenario()">
+                <option value="base">Base Case</option>
+                <option value="bull">Bull Case</option>
+                <option value="bear">Bear Case</option>
+            </select>
+        </div>
+        <div class="control-group"><label>BTC Monthly Growth (%)</label><input type="number" id="btcGrowth" value="3.5" step="0.1"></div>
+        <div class="control-group"><label>Monthly Cap Raise ($B)</label><input type="number" id="monthlyRaise" value="1.0" step="0.1"></div>
+        <div class="control-group"><label>Share Dilution (%/mo)</label><input type="number" id="shareDilution" value="0.5" step="0.05"></div>
+        <div class="control-group"><label>MNAV Premium</label><input type="number" id="mnav" value="1.15" step="0.01"></div>
+        <div class="control-group" style="justify-content: flex-end;"><button onclick="calculateModel()">Update Model</button></div>
+        <input type="hidden" id="atmPref" value="1.0"> </div>
+
+    <div id="eoy2030Summary" class="summary-plaque">
+        <div class="summary-row">
+            <div class="sum-item"><span class="sum-label">EOY 2030 BTC Price</span><span id="sumBTCPrice" class="sum-val"></span></div>
+            <div class="sum-item"><span class="sum-label">BTC CAGR</span><span id="sumBTCCAGR" class="sum-val highlight"></span></div>
+            <div class="sum-item"><span class="sum-label">EOY 2030 MSTR Price</span><span id="sumMSTRPrice" class="sum-val"></span></div>
+            <div class="sum-item"><span class="sum-label">MSTR CAGR</span><span id="sumMSTRCAGR" class="sum-val highlight"></span></div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="modelTable">
+            <thead>
+                <tr>
+                    <th>Year</th><th>Month</th><th>Bitcoins</th><th>BTC Price</th><th>Raise</th><th>Debt</th><th>Prem</th><th>Mkt Cap</th><th>Shares</th><th>MSTR Price</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <canvas id="priceChart" style="width: 100%; height: 400px;"></canvas>
+</div>
+
+<script>
+    // Logic remains identical to your index2.html to preserve the math
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const history = [
+        { yr: 2024, mo: "Nov", btc: 410000, price: 97000, raise: 12.04, debt: 4.27, pref: 0, mnav: 3.0, shares: 234.6 },
+        { yr: 2024, mo: "Dec", btc: 446400, price: 96000, raise: 8.92, debt: 10.71, pref: 0, mnav: 1.97, shares: 281.4 },
+        { yr: 2025, mo: "Jan", btc: 471107, price: 92000, raise: 0, debt: 11.54, pref: 0, mnav: 2.1, shares: 281.4 },
+        { yr: 2025, mo: "Feb", btc: 506226, price: 87000, raise: 0, debt: 8.22, pref: 0, mnav: 2.0, shares: 238.5 },
+        { yr: 2025, mo: "Mar", btc: 528000, price: 84000, raise: 0, debt: 8.22, pref: 0.04, mnav: 1.9, shares: 238.5 },
+        { yr: 2025, mo: "Apr", btc: 533555, price: 95000, raise: 0.08, debt: 8.22, pref: 0.08, mnav: 2.25, shares: 273.0 },
+        { yr: 2025, mo: "May", btc: 550000, price: 107700, raise: 0.16, debt: 10.17, pref: 0.16, mnav: 2.1, shares: 273.4 },
+        { yr: 2025, mo: "Jun", btc: 583376, price: 118470, raise: 0.40, debt: 10.57, pref: 0.4, mnav: 2.2, shares: 273.4 },
+        { yr: 2025, mo: "Jul", btc: 607000, price: 120000, raise: 0.40, debt: 11.74, pref: 0.4, mnav: 1.8, shares: 253.7 },
+        { yr: 2025, mo: "Aug", btc: 627000, price: 120000, raise: 0.40, debt: 14.55, pref: 0.4, mnav: 1.7, shares: 283.5 },
+        { yr: 2025, mo: "Sep", btc: 640000, price: 110000, raise: 0.80, debt: 15.25, pref: 0.7, mnav: 1.8, shares: 283.8 },
+        { yr: 2025, mo: "Oct", btc: 643630, price: 110000, raise: 0.40, debt: 15.55, pref: 0.3, mnav: 1.7, shares: 284.1 },
+        { yr: 2025, mo: "Nov", btc: 650692, price: 89000, raise: 0.39, debt: 15.55, pref: 0.3, mnav: 1.15, shares: 284.1 }
+    ];
+
+    function updateScenario() {
+        const scenario = document.getElementById('scenario').value;
+        if (scenario === 'bull') {
+            document.getElementById('btcGrowth').value = 5.0; document.getElementById('monthlyRaise').value = 1.5; document.getElementById('mnav').value = 1.3;
+        } else if (scenario === 'bear') {
+            document.getElementById('btcGrowth').value = 2.0; document.getElementById('monthlyRaise').value = 0.5; document.getElementById('mnav').value = 1.0;
+        } else {
+            document.getElementById('btcGrowth').value = 3.5; document.getElementById('monthlyRaise').value = 1.0; document.getElementById('mnav').value = 1.15;
+        }
+        calculateModel();
+    }
+
+    function calculateModel() {
+        const btcGrowth = parseFloat(document.getElementById('btcGrowth').value) / 100;
+        const monthlyRaise = parseFloat(document.getElementById('monthlyRaise').value);
+        const atmPref = parseFloat(document.getElementById('atmPref').value);
+        const dilution = parseFloat(document.getElementById('shareDilution').value) / 100;
+        const mnav = parseFloat(document.getElementById('mnav').value);
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        let allRows = history.map(row => ({ yr: row.yr, mo: row.mo, price: row.price, sharePrice: (((row.btc * row.price * row.mnav) / 1e9) * 1000 / row.shares).toFixed(2) }));
+        let chartData = { labels: [], btcPct: [], mstrPct: [] };
+        const currentBTCPrice = history[history.length - 1].price;
+        const currentMSTRPrice = ( (history[history.length - 1].btc * history[history.length - 1].price * history[history.length - 1].mnav) / 1e9 * 1000 ) / history[history.length - 1].shares;
+
+        history.forEach((row, index) => {
+            const histMSTRPrice = ( (row.btc * row.price * row.mnav) / 1e9 * 1000 ) / row.shares;
+            const tr = document.createElement('tr');
+            tr.className = (index === history.length - 1) ? 'current' : 'past';
+            tr.innerHTML = `<td>${row.yr}</td><td>${row.mo}</td><td class="num">${row.btc.toLocaleString()}</td><td class="num">$${row.price.toLocaleString()}</td><td class="num">${row.raise}</td><td class="num">${row.debt}</td><td class="num">${row.mnav}</td><td class="num">${((row.btc * row.price * row.mnav) / 1e9).toFixed(1)}B</td><td class="num">${row.shares.toFixed(0)}M</td><td class="num">$${histMSTRPrice.toFixed(2)}</td>`;
+            tbody.appendChild(tr);
+            chartData.labels.push(`${row.mo} ${row.yr}`);
+            chartData.btcPct.push( ((row.price - currentBTCPrice) / currentBTCPrice * 100).toFixed(2) );
+            chartData.mstrPct.push( ((histMSTRPrice - currentMSTRPrice) / currentMSTRPrice * 100).toFixed(2) );
+        });
+
+        let lastBTC = history[history.length - 1].btc; let lastPrice = history[history.length - 1].price;
+        let lastDebt = history[history.length - 1].debt; let lastShares = history[history.length - 1].shares;
+        let currentYear = 2025; let startMonthIdx = 11;
+
+        for (let i = 0; i < 61; i++) {
+            let monthIdx = (startMonthIdx + i) % 12;
+            if (monthIdx === 0 && i !== 0) currentYear++;
+            lastPrice = lastPrice * (1 + btcGrowth);
+            lastBTC = lastBTC + (monthlyRaise * 1e9 / lastPrice);
+            lastDebt += monthlyRaise; lastShares = lastShares * (1 + dilution);
+            let marketCap = (lastBTC * lastPrice * mnav) / 1e9;
+            let sharePrice = (marketCap * 1000) / lastShares;
+            if (i % 3 === 0 || i === 60) { // Limit rows for cleaner view
+                const tr = document.createElement('tr'); tr.innerHTML = `<td>${currentYear}</td><td>${months[monthIdx]}</td><td class="num">${Math.round(lastBTC).toLocaleString()}</td><td class="num">$${Math.round(lastPrice).toLocaleString()}</td><td class="num">${monthlyRaise.toFixed(1)}</td><td class="num">${lastDebt.toFixed(1)}</td><td class="num">${mnav.toFixed(2)}</td><td class="num">${marketCap.toFixed(1)}B</td><td class="num">${lastShares.toFixed(0)}M</td><td class="num">$${sharePrice.toFixed(2)}</td>`;
+                tbody.appendChild(tr);
+            }
+            chartData.labels.push(`${months[monthIdx]} ${currentYear}`);
+            chartData.btcPct.push( ((lastPrice - currentBTCPrice) / currentBTCPrice * 100).toFixed(2) );
+            chartData.mstrPct.push( ((sharePrice - currentMSTRPrice) / currentMSTRPrice * 100).toFixed(2) );
+            allRows.push({ yr: currentYear, mo: months[monthIdx], price: Math.round(lastPrice), sharePrice: sharePrice.toFixed(2) });
+        }
+
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        if (window.myChart) window.myChart.destroy();
+        window.myChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: chartData.labels, datasets: [
+                { label: 'BTC %', data: chartData.btcPct, borderColor: '#f59e0b', tension: 0.3 },
+                { label: 'MSTR %', data: chartData.mstrPct, borderColor: '#3b82f6', tension: 0.3 }
+            ]},
+            options: { responsive: true, plugins: { legend: { labels: { color: '#94a3b8' } } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
+        });
+
+        const eoy2030 = allRows.find(row => row.yr === 2030 && row.mo === "Dec");
+        if (eoy2030) {
+            const btcMult = (eoy2030.price / currentBTCPrice);
+            const mstrMult = (parseFloat(eoy2030.sharePrice) / currentMSTRPrice);
+            document.getElementById('sumBTCPrice').textContent = `$${eoy2030.price.toLocaleString()}`;
+            document.getElementById('sumBTCCAGR').textContent = ((Math.pow(btcMult, 1/5) - 1) * 100).toFixed(1) + '%';
+            document.getElementById('sumMSTRPrice').textContent = `$${parseFloat(eoy2030.sharePrice).toLocaleString()}`;
+            document.getElementById('sumMSTRCAGR').textContent = ((Math.pow(mstrMult, 1/5) - 1) * 100).toFixed(1) + '%';
+        }
+    }
+    calculateModel();
+</script>
+</body>
+</html>

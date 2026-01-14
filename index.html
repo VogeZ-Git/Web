@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOTP Pro | Analytics Suite</title>
+    <style>
+        :root { --primary: #3b82f6; --bg: #0b0f1a; --card: #161e2d; --text: #e2e8f0; --accent: #10b981; }
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: var(--bg); 
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0b0f1a 100%);
+            color: var(--text); 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+        }
+        .container { max-width: 900px; text-align: center; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 40px; }
+        .portal-card {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #2d3748;
+            text-decoration: none;
+            color: var(--text);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .portal-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .icon { font-size: 3rem; margin-bottom: 15px; }
+        h1 { font-size: 2.5rem; margin: 0; color: #fff; }
+        p { color: #94a3b8; margin-top: 10px; }
+        .btn {
+            margin-top: 25px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SOTP Pro Suite</h1>
+        <p>Institutional-grade valuation and treasury projection tools.</p>
+        <div class="grid">
+            <a href="treasury.html" class="portal-card">
+                <div class="icon">₿</div>
+                <h2>Treasury Model</h2>
+                <p>Strategic BTC acquisition and share dilution projection.</p>
+                <div class="btn">Access Terminal</div>
+            </a>
+            <a href="sotp.html" class="portal-card">
+                <div class="icon">⛏️</div>
+                <h2>SOTP Valuation</h2>
+                <p>Sum-of-the-parts analysis for miners and energy assets.</p>
+                <div class="btn">Access Terminal</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
