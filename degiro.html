@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEGIRO Portfolio Margin Simulator v6.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f4f7f9; font-family: 'Segoe UI', sans-serif; }
+        .degiro-blue { background-color: #003399; }
+        .degiro-card { background: white; border-radius: 4px; border: 1px solid #d1dce4; }
+        input, select { border: 1px solid #d1dce4; border-radius: 3px; padding: 4px 8px; font-size: 0.875rem; }
+        .checkbox-label { font-size: 0.75rem; color: #6b7280; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        .edit-btn { color: #003399; margin-right: 8px; font-weight: bold; cursor: pointer; }
+        .edit-btn:hover { text-decoration: underline; }
+        input[type=range] { width: 100%; accent-color: #003399; }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="degiro-blue text-white p-4 mb-6 rounded flex justify-between items-center shadow-lg">
+        <div>
+            <h1 class="text-xl font-bold">Margin & Risico Simulator</h1>
+            <p class="text-xs opacity-80">Stress Test Sliders Toegevoegd</p>
+        </div>
+        <div class="flex gap-6 text-right">
+            <div>
+                <p class="text-xs uppercase opacity-70">Vrije Ruimte (EUR)</p>
+                <p id="top-free-space" class="text-xl font-bold">€ 0,00</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <div class="lg:col-span-1 space-y-6">
+            <div class="degiro-card p-4">
+                <h2 class="font-bold border-b mb-4 pb-2 text-sm uppercase text-gray-500">Account & Valuta</h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold">Account Type</label>
+                        <select id="account-type" onchange="calculate()" class="w-full bg-gray-50">
+                            <option value="trader">Trader (Lager risico model)</option>
+                            <option value="active">Active (Beperkte margin)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold">Wisselkoers (1 EUR = ? USD)</label>
+                        <input type="number" id="fx-rate" oninput="calculate()" class="w-full" value="1.16" step="0.001">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold">Cash EUR</label>
+                        <input type="number" id="cash-eur" oninput="calculate()" class="w-full" value="1000">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold">Cash USD</label>
+                        <input type="number" id="cash-usd" oninput="calculate()" class="w-full" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="degiro-card p-4 bg-orange-50 border-orange-200">
+                <h2 class="font-bold border-b border-orange-200 mb-4 pb-2 text-sm uppercase text-orange-700">Stress Test (Prijsval)</h2>
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-bold text-gray-700">Globale Daling</label>
+                            <span id="val-shock-global" class="text-xs font-mono bg-white px-2 rounded border">0%</span>
+                        </div>
+                        <input type="range" id="shock-global" min="0" max="100" value="0" step="1" oninput="calculate()">
+                    </div>
+
+                    <div class="pt-4 border-t border-orange-100">
+                        <label class="block text-xs font-bold text-gray-700 mb-2">Specifieke Daling</label>
+                        <select id="shock-target" onchange="calculate()" class="w-full mb-3 text-[10px]">
+                            <option value="">-- Kies product --</option>
+                        </select>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[10px] text-gray-500 italic">Daling voor selectie</label>
+                            <span id="val-shock-single" class="text-xs font-mono bg-white px-2 rounded border">0%</span>
+                        </div>
+                        <input type="range" id="shock-single" min="0" max="100" value="0" step="1" oninput="calculate()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="degiro-card p-4">
+                <h2 class="font-bold border-b mb-4 pb-2 text-sm uppercase text-gray-500">Data Beheer</h2>
+                <div class="grid grid-cols-1 gap-2">
+                    <button onclick="exportPortfolio()" class="bg-gray-100 border border-gray-300 py-1 rounded text-xs hover:bg-gray-200">Exporteer Portfolio</button>
+                    <input type="file" id="importFile" class="hidden" onchange="importPortfolio(event)">
+                    <button onclick="document.getElementById('importFile').click()" class="bg-gray-100 border border-gray-300 py-1 rounded text-xs hover:bg-gray-200">Importeer Portfolio</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2">
+            <div class="degiro-card p-4 mb-6">
+                <h2 class="font-bold border-b mb-4 pb-2 text-sm uppercase text-gray-500">Product Instellen</h2>
+                <div class="grid grid-cols-2 md:grid-cols-6 gap-2 items-end">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold mb-1">Product</label>
+                        <input type="text" id="in-name" class="w-full" placeholder="bijv. ASML">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Sector</label>
+                        <select id="in-sector" class="w-full text-[10px]">
+                            <option value="Services">Services</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Blockchain & Cryptocurrency (NEC)">Crypto</option>
+                            <option value="Consumer Cyclical">Consumer Cyclical</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Cat.</label>
+                        <select id="in-cat" class="w-full">
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Aantal</label>
+                        <input type="number" id="in-qty" class="w-full" value="10">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Koers</label>
+                        <div class="flex">
+                            <input type="number" id="in-price" class="w-1/2 border-r-0 rounded-r-none" value="100">
+                            <select id="in-curr" class="w-1/2 rounded-l-none border-l-0 bg-gray-50 text-[10px]">
+                                <option value="EUR">€</option>
+                                <option value="USD">$</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-span-full mt-2">
+                        <button onclick="addRow()" class="degiro-blue text-white font-bold py-2 px-6 rounded text-sm w-full">Voeg Toe / Update Portfolio</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="degiro-card overflow-x-auto">
+                <table class="w-full text-left text-[11px]">
+                    <thead>
+                        <tr class="bg-gray-50 border-b-2 border-gray-200 text-gray-600">
+                            <th class="p-3">Product</th>
+                            <th class="p-3">Sector</th>
+                            <th class="p-3">Cat.</th>
+                            <th class="p-3 text-right">Aantal</th>
+                            <th class="p-3 text-right">Koers (Sim)</th>
+                            <th class="p-3 text-right">Waarde (EUR)</th>
+                            <th class="p-3 text-right">Indiv. Risico</th>
+                            <th class="p-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolio-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1">
+            <div class="degiro-card p-4 bg-gray-50 sticky top-6">
+                <h2 class="font-bold border-b mb-4 pb-2 text-sm uppercase text-gray-500 text-center">Dashboard</h2>
+                
+                <div class="space-y-2 text-sm mb-6">
+                    <div class="flex justify-between">
+                        <span>Waarde Portefeuille</span>
+                        <span id="stat-total-value" class="font-semibold">€ 0,00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Netto kassaldo</span>
+                        <span id="stat-total-cash" class="font-semibold">€ 0,00</span>
+                    </div>
+                    <div class="flex justify-between border-t border-gray-200 pt-2 text-blue-800 font-bold">
+                        <span>Netto liquiditeitswaarde</span>
+                        <span id="stat-liq-value">€ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="py-2 space-y-1 border-t pt-4">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase mb-2 tracking-wider">Risico Scans</p>
+                    
+                    <div class="flex justify-between items-start leading-tight mb-1">
+                        <div class="flex flex-col">
+                            <span class="text-xs">1. Event Risico (Indiv.)</span>
+                            <span id="label-largest-pos" class="text-[10px] text-gray-500 italic">-</span>
+                        </div>
+                        <span id="risk-event" class="font-mono font-bold">€ 0,00</span>
+                    </div>
+
+                    <div class="flex justify-between mb-1">
+                        <span class="text-xs">2. Event Risico Short</span>
+                        <span id="risk-short" class="font-mono">€ 0,00</span>
+                    </div>
+
+                    <div class="flex justify-between items-start leading-tight mb-1">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold">3. Sector Risico (40%+100%D)</span>
+                            <span id="label-largest-sector" class="text-[10px] text-gray-500 italic">-</span>
+                        </div>
+                        <span id="risk-sector" class="font-mono font-bold">€ 0,00</span>
+                    </div>
+
+                    <div class="flex justify-between mb-1">
+                        <span class="text-xs">4. Netto Risico (25%+100%D)</span>
+                        <span id="risk-net" class="font-mono">€ 0,00</span>
+                    </div>
+
+                    <div class="flex justify-between mb-1">
+                        <span class="text-xs">5. Bruto Risico (10%+100%D)</span>
+                        <span id="risk-gross" class="font-mono">€ 0,00</span>
+                    </div>
+
+                    <div class="flex justify-between items-center mt-2 border-t pt-2">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="fx-toggle" checked onchange="calculate()">
+                            <span>6. Valutarisico (6.36%)</span>
+                        </label>
+                        <span id="risk-fx" class="font-mono text-orange-700">€ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-400 mt-4 pt-4 space-y-2">
+                    <div class="flex justify-between text-base">
+                        <span class="font-bold">Totaal Risico</span>
+                        <span id="stat-total-risk" class="font-bold text-red-600">€ 0,00</span>
+                    </div>
+                    <div class="flex justify-between border-t border-gray-300 pt-2 text-lg">
+                        <span class="font-bold">Vrije Ruimte</span>
+                        <span id="stat-surplus" class="font-bold text-green-600">€ 0,00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let portfolio = [];
+        let editingId = null;
+        
+        const riskTable = {
+            active: { A: 0.8375, B: 0.8375, C: 0.99, D: 1.0 },
+            trader: { A: 0.625, B: 0.8125, C: 0.99, D: 1.0 }
+        };
+
+        function updateShockDropdown() {
+            const dropdown = document.getElementById('shock-target');
+            const currentVal = dropdown.value;
+            dropdown.innerHTML = '<option value="">-- Kies product --</option>';
+            portfolio.forEach(p => {
+                dropdown.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+            });
+            dropdown.value = currentVal;
+        }
+
+        function addRow() {
+            const name = document.getElementById('in-name').value;
+            const sector = document.getElementById('in-sector').value;
+            const cat = document.getElementById('in-cat').value;
+            const qty = parseFloat(document.getElementById('in-qty').value);
+            const price = parseFloat(document.getElementById('in-price').value);
+            const curr = document.getElementById('in-curr').value;
+
+            if(name && !isNaN(qty)) {
+                if(editingId) {
+                    portfolio = portfolio.filter(p => p.id !== editingId);
+                    editingId = null;
+                }
+                portfolio.push({ id: Date.now(), name, sector, cat, qty, price, currency: curr });
+                updateShockDropdown();
+                calculate();
+                document.getElementById('in-name').value = '';
+            }
+        }
+
+        function editRow(id) {
+            const item = portfolio.find(p => p.id === id);
+            if(item) {
+                document.getElementById('in-name').value = item.name;
+                document.getElementById('in-sector').value = item.sector;
+                document.getElementById('in-cat').value = item.cat;
+                document.getElementById('in-qty').value = item.qty;
+                document.getElementById('in-price').value = item.price;
+                document.getElementById('in-curr').value = item.currency;
+                editingId = id;
+                calculate();
+            }
+        }
+
+        function removeRow(id) {
+            portfolio = portfolio.filter(p => p.id !== id);
+            if(editingId === id) editingId = null;
+            updateShockDropdown();
+            calculate();
+        }
+
+        function calculate() {
+            const type = document.getElementById('account-type').value;
+            const fxRate = parseFloat(document.getElementById('fx-rate').value) || 1;
+            const cashEur = parseFloat(document.getElementById('cash-eur').value) || 0;
+            const cashUsd = parseFloat(document.getElementById('cash-usd').value) || 0;
+            const fxEnabled = document.getElementById('fx-toggle').checked;
+
+            // Stress Test Waarden
+            const globalShock = parseFloat(document.getElementById('shock-global').value) / 100;
+            const singleShock = parseFloat(document.getElementById('shock-single').value) / 100;
+            const targetId = document.getElementById('shock-target').value;
+            
+            document.getElementById('val-shock-global').innerText = `-${Math.round(globalShock*100)}%`;
+            document.getElementById('val-shock-single').innerText = `-${Math.round(singleShock*100)}%`;
+            
+            const cashUsdInEur = cashUsd / fxRate;
+            const totalCashEur = cashEur + cashUsdInEur;
+            
+            let totalValueEur = 0;
+            let totalUsdExposure = Math.abs(cashUsdInEur);
+            
+            let valueD = 0;
+            let valueNonD = 0;
+            let sectorValues = {}; 
+            
+            let maxIndivRisk = 0;
+            let largestPosName = "-";
+            let largestPosCat = "-";
+
+            const tbody = document.getElementById('portfolio-body');
+            tbody.innerHTML = '';
+
+            portfolio.forEach(p => {
+                // Toepassen van Stress Test op de koers
+                let shockedPrice = p.price * (1 - globalShock);
+                if (p.id.toString() === targetId) {
+                    shockedPrice = shockedPrice * (1 - singleShock);
+                }
+
+                const priceInEur = p.currency === 'USD' ? (shockedPrice / fxRate) : shockedPrice;
+                const valueInEur = p.qty * priceInEur;
+                const absValue = Math.abs(valueInEur);
+                const riskPerc = riskTable[type][p.cat];
+                const indivRisk = absValue * riskPerc;
+                
+                totalValueEur += valueInEur;
+                if(p.currency === 'USD') totalUsdExposure += absValue;
+
+                if(p.cat === 'D') {
+                    valueD += absValue;
+                } else {
+                    valueNonD += absValue;
+                }
+
+                if(!sectorValues[p.sector]) sectorValues[p.sector] = 0;
+                sectorValues[p.sector] += absValue;
+
+                if(indivRisk > maxIndivRisk) {
+                    maxIndivRisk = indivRisk;
+                    largestPosName = p.name;
+                    largestPosCat = p.cat;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50 ${editingId === p.id ? 'bg-yellow-50' : ''}">
+                        <td class="p-3 font-medium">${p.name}</td>
+                        <td class="p-3 text-gray-500">${p.sector}</td>
+                        <td class="p-3"><span class="bg-gray-200 px-2 py-0.5 rounded text-[10px] font-bold">${p.cat}</span></td>
+                        <td class="p-3 text-right">${p.qty}</td>
+                        <td class="p-3 text-right ${shockedPrice < p.price ? 'text-red-500 font-bold' : ''}">${p.currency === 'USD' ? '$' : '€'}${shockedPrice.toFixed(2)}</td>
+                        <td class="p-3 text-right font-semibold">€${valueInEur.toLocaleString('nl-NL', {minimumFractionDigits:2})}</td>
+                        <td class="p-3 text-right text-blue-600">€${indivRisk.toLocaleString('nl-NL', {minimumFractionDigits:2})}</td>
+                        <td class="p-3 text-right">
+                            <span class="edit-btn" onclick="editRow(${p.id})">Bewerk</span>
+                            <button onclick="removeRow(${p.id})" class="text-gray-400 hover:text-red-500">✕</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            let maxSectorValue = 0;
+            let largestSectorName = "-";
+            for (let s in sectorValues) {
+                if(sectorValues[s] > maxSectorValue) {
+                    maxSectorValue = sectorValues[s];
+                    largestSectorName = s;
+                }
+            }
+
+            const riskFx = totalUsdExposure * 0.0636;
+            const riskNet = (valueNonD * 0.25) + valueD + riskFx; 
+            const riskGross = (valueNonD * 0.10) + valueD + riskFx;
+            const riskSector = (maxSectorValue * 0.40) + valueD + riskFx;
+
+            const baseRisk = Math.max(maxIndivRisk, 0, riskSector, riskNet, riskGross);
+            const totalRisk = baseRisk;
+            
+            const netLiquidity = totalValueEur + totalCashEur;
+            const surplus = netLiquidity - totalRisk;
+
+            // Dashboard Update
+            document.getElementById('stat-total-value').innerText = `€ ${totalValueEur.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+            document.getElementById('stat-total-cash').innerText = `€ ${totalCashEur.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+            document.getElementById('stat-liq-value').innerText = `€ ${netLiquidity.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+            
+            document.getElementById('risk-event').innerText = `€ ${maxIndivRisk.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+            document.getElementById('label-largest-pos').innerText = `${largestPosName} (${largestPosCat})`;
+            
+            document.getElementById('risk-sector').innerText = `€ ${riskSector.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+            document.getElementById('label-largest-sector').innerText = `${largestSectorName}`;
+            
+            document.getElementById('risk-short').innerText = `€ 0,00`;
+            document.getElementById('risk-net').innerText = `€ ${riskNet.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+            document.getElementById('risk-gross').innerText = `€ ${riskGross.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+            document.getElementById('risk-fx').innerText = `€ ${riskFx.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+            
+            document.getElementById('stat-total-risk').innerText = `€ ${totalRisk.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+            document.getElementById('stat-surplus').innerText = `€ ${surplus.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+            document.getElementById('top-free-space').innerText = `€ ${surplus.toLocaleString('nl-NL', {minimumFractionDigits: 2})}`;
+
+            document.getElementById('stat-surplus').className = surplus < 0 ? 'text-red-600 font-bold' : 'text-green-600 font-bold';
+            document.getElementById('top-free-space').className = surplus < 0 ? 'text-xl font-bold text-red-400' : 'text-xl font-bold';
+        }
+
+        function exportPortfolio() {
+            const data = { portfolio, settings: { type: document.getElementById('account-type').value, fx: document.getElementById('fx-rate').value, cashEur: document.getElementById('cash-eur').value, cashUsd: document.getElementById('cash-usd').value, fxOn: document.getElementById('fx-toggle').checked }};
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], {type: 'application/json'}));
+            a.download = `degiro_margin_v6_stress_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        function importPortfolio(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = JSON.parse(e.target.result);
+                portfolio = data.portfolio.map(p => ({ ...p, sector: p.sector || "Technology" }));
+                document.getElementById('account-type').value = data.settings.type;
+                document.getElementById('fx-rate').value = data.settings.fx;
+                document.getElementById('cash-eur').value = data.settings.cashEur;
+                document.getElementById('cash-usd').value = data.settings.cashUsd;
+                document.getElementById('fx-toggle').checked = data.settings.fxOn;
+                updateShockDropdown();
+                calculate();
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        calculate();
+    </script>
+</body>
+</html>
