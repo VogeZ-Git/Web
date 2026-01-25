@@ -3,105 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X User Hub</title>
+    <title>X Intelligence Hub</title>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, sans-serif; display: flex; height: 100vh; margin: 0; background: #000; color: #fff; }
-        
-        /* Sidebar */
-        #sidebar { width: 300px; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 20px; }
-        h2 { font-size: 1.2rem; margin-top: 0; color: #1d9bf0; }
-        
-        #user-list { list-style: none; padding: 0; flex-grow: 1; overflow-y: auto; }
-        .user-btn { 
-            width: 100%; text-align: left; padding: 12px; margin-bottom: 8px;
-            background: #16181c; border: 1px solid #333; border-radius: 8px;
-            color: white; cursor: pointer; transition: 0.2s;
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; background: #000; color: #fff; 
+            display: flex; flex-direction: column; height: 100vh;
         }
-        .user-btn:hover { background: #202327; border-color: #1d9bf0; }
-        .user-btn.active { background: #1d9bf0; border-color: #1d9bf0; font-weight: bold; }
+        
+        header {
+            padding: 15px 30px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #000;
+        }
 
-        /* Input Area */
-        .add-area { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
+        h1 { margin: 0; font-size: 1.3rem; color: #1d9bf0; letter-spacing: 0.5px; }
+
+        #dashboard { 
+            display: flex; 
+            flex-direction: row; 
+            gap: 15px; 
+            padding: 20px; 
+            flex-grow: 1; 
+            overflow-x: auto; 
+            align-items: flex-start;
+        }
+
+        .column {
+            min-width: 280px;
+            max-width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+        }
+
+        .column-header {
+            padding: 10px 5px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #71767b;
+            border-bottom: 2px solid #333;
+            margin-bottom: 10px;
+            position: sticky;
+            top: 0;
+            background: #000;
+            z-index: 10;
+        }
+
+        /* User Cards */
+        .user-card { 
+            position: relative;
+            width: 100%; text-align: left; padding: 14px;
+            background: #16181c; border: 1px solid #2f3336; border-radius: 12px;
+            color: white; cursor: pointer; transition: all 0.2s ease;
+            text-decoration: none; display: block;
+        }
+        .user-card:hover { 
+            background: #1d9bf015; 
+            border-color: #1d9bf0; 
+            transform: translateY(-2px);
+        }
+        .user-card.starred {
+            border-color: #ffd70050;
+            background: #ffd70008;
+        }
+        
+        .user-name { font-weight: 800; font-size: 0.95rem; display: block; color: #fff; padding-right: 25px;}
+        .user-handle { font-weight: 400; font-size: 0.85rem; color: #1d9bf0; display: block; margin-bottom: 6px; }
+        .user-desc { font-size: 0.75rem; color: #71767b; line-height: 1.4; display: block; }
+
+        /* Star Button */
+        .star-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #444;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 0;
+            line-height: 1;
+        }
+        .star-btn:hover { color: #ffd700; transform: scale(1.2); }
+        .starred .star-btn { color: #ffd700; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+        .add-area {
+            background: #16181c; padding: 15px; border-radius: 12px; border: 1px dashed #333;
+        }
         input { 
-            width: 100%; padding: 10px; border-radius: 20px; border: 1px solid #333; 
-            background: #000; color: white; margin-bottom: 10px; outline: none;
+            width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #333; 
+            background: #000; color: white; margin-bottom: 8px; outline: none; font-size: 0.8rem;
         }
         button#add-btn { 
-            width: 100%; padding: 10px; border-radius: 20px; border: none;
-            background: #fff; color: #000; font-weight: bold; cursor: pointer;
-        }
-
-        /* Main Viewport */
-        #content-view { flex-grow: 1; background: #16181c; position: relative; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .placeholder {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; color: #71767b; text-align: center; padding: 20px;
+            width: 100%; padding: 8px; border-radius: 8px; border: none;
+            background: #1d9bf0; color: #fff; font-weight: bold; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<div id="sidebar">
-    <h2>X User List</h2>
-    <div id="user-list">
-        <button class="user-btn" onclick="openUser('elonmusk', this)">@elonmusk</button>
-        <button class="user-btn" onclick="openUser('nasa', this)">@nasa</button>
-    </div>
+<header>
+    <h1>X INTELLIGENCE HUB</h1>
+    <div style="font-size: 0.75rem; color: #71767b;">Starred users stay at the top</div>
+</header>
 
-    <div class="add-area">
-        <input type="text" id="username-input" placeholder="Enter username...">
-        <button id="add-btn" onclick="addNewUser()">Add to List</button>
-    </div>
-</div>
-
-<div id="content-view">
-    <div id="placeholder" class="placeholder">
-        <h3>Select a user to view posts</h3>
-        <p>Note: X may prevent loading inside a frame. <br> If the screen is blank, click the button below.</p>
-        <button id="direct-link" style="padding: 10px 20px; border-radius: 20px; cursor: pointer; display: none;"></button>
-    </div>
-    <iframe id="x-frame" src=""></iframe>
-</div>
+<div id="dashboard"></div>
 
 <script>
-    function openUser(username, btn) {
-        // Highlight active button
-        document.querySelectorAll('.user-btn').forEach(b => b.classList.remove('active'));
-        if(btn) btn.classList.add('active');
+    // CORE DATA
+    const defaultData = {
+"🏎️ Tesla, AI & Robotics": [
+            { n: "Humanoids daily", h: "humanoidsdaily", d: "Developments in humanoid robots and intelligent machines." },
+            { n: "Tesla AI", h: "Tesla_AI", d: "Official updates on Tesla’s AI and autonomous systems." },
+            { n: "Tesla Optimus", h: "Tesla_Optimus", d: "Updates on the general-purpose, bi-pedal humanoid robot." },
+            { n: "Tesla Energy", h: "teslaenergy", d: "Solar Panels, Solar Roof, and Powerwall solutions." },
+            { n: "Jeff Lutz", h: "thejefflutz", d: "CEO and manufacturing consultant specializing in supply chain." },
+            { n: "Edge Case", h: "edgecase411", d: "FSD tester and progress tracker sharing road clips." },
+            { n: "Jo Bhakdi", h: "JOBhakdi", d: "Founder of PioneerAlpha and Pioneerlands.org." },
+            { n: "Cern Basher", h: "CernBasher", d: "Co-Founder and CIO at Brilliant Advice." },
+            { n: "Ashok Elluswamy", h: "aelluswamy", d: "Director of AI software at Tesla." },
+            { n: "NVIDIA", h: "nvidia", d: "Official handle for NVIDIA’s computing and AI." },
+            { n: "SpaceX", h: "SpaceX", d: "Advanced rockets and spacecraft development." },
+            { n: "nextbigfuture", h: "nextbigfuture", d: "Insights on world-changing science and technology." },
+            { n: "Tesla", h: "Tesla", d: "Electric vehicles, batteries, solar, AI, and robotics." }
+        ],
+        "🌍 Macro & Disruptors": [
+            { n: "NavigateX", h: "Navigate_X", d: "Research on tech disruption and superabundance." },
+            { n: "Mel Mattison", h: "MelMattison1", d: "Author and former fintech executive; financial philosophy." },
+            { n: "Mikkel Rosenvold", h: "RosenvoldGeo", d: "Macro analyst associated with Real Vision." },
+            { n: "Fidenza Macro", h: "fidenzamacro", d: "Experienced trader and macro newsletter author." },
+            { n: "Jordi Visser", h: "jvisserlabs", d: "President/CIO at Weiss Multi-Strategy Advisers." },
+            { n: "Altimeter Group", h: "wearealtimeter", d: "Consulting focused on design, foresight, and strategy." },
+            { n: "Darius Dale", h: "DariusDale42", d: "Founder and CEO of 42 Macro." },
+            { n: "K33 Research", h: "K33Research", d: "Insights into digital assets and market signals." },
+            { n: "Andreas Steno Larsen", h: "AndreasSteno", d: "Founder of NowcastIQ; serial entrepreneur." },
+            { n: "RethinkX", h: "rethink_x", d: "Forecasting technology-driven disruption." },
+            { n: "Cathie Wood", h: "CathieDWood", d: "Founder/CEO of ARK Invest; disruptive innovation." },
+            { n: "Real Vision", h: "RealVision", d: "Crowdsourced investor intelligence." },
+            { n: "Balaji", h: "balajis", d: "Author of The Network State." },
+            { n: "CaspianReport", h: "CaspianReport", d: "Geopolitical analysis and global trend monitoring." }
+        ],
+        "📈 Markets & Growth": [
+            { n: "Mark He", h: "RealMarkHe", d: "Investor focused on Tesla, MSTR, and Bitcoin." },
+            { n: "Lin", h: "Speculator_io", d: "Engineer, VC, and future optimist." },
+            { n: "Mark Koops", h: "therealkoops", d: "Commodities investor; Founder of Commodity Community." },
+            { n: "AJ", h: "alojoh", d: "Quantitative researcher; fundamental & sentiment analysis." },
+            { n: "Lyn Alden", h: "LynAldenContact", d: "Investment Strategy and author of Broken Money." },
+            { n: "Matt Smith", h: "nerdalert", d: "Equity analyst focused on finance and energy." },
+            { n: "Julien Bittel, CFA", h: "BittelJulien", d: "Head of Macro Research at Global Macro Investor." },
+            { n: "Charlie Bilello", h: "charliebilello", d: "Chief Market Strategist at Creative Planning." }
+        ],
+        "⛓️ Crypto & DeFi": [
+            { n: "Token Treasury Tracker", h: "tkn_tracker", d: "Updates on token treasury data." },
+            { n: "btcSOL", h: "btcsol_co", d: "Staking SOL and accumulating BTC via Zeus Network." },
+            { n: "Kamino Intern", h: "kaminointern", d: "DeFi analyst focusing on APY/yield strategies." },
+            { n: "JupiterDAO", h: "jup_dao", d: "Governance and voting for Jupiter Exchange." },
+            { n: "Syrup", h: "syrupfi", d: "Institutional lending platform." },
+            { n: "Zeus Network", h: "ZeusNetworkHQ", d: "Connecting Bitcoin liquidity to Solana." },
+            { n: "Maple", h: "maplefinance", d: "On-chain asset management and institutional credit." },
+            { n: "Z³us", h: "Z3usCrypto", d: "Cryptocurrency trader and market commentator." },
+            { n: "Stephen | DeFi Dojo", h: "phtevenstrong", d: "On-chain yield specialist." },
+            { n: "MartyParty", h: "martypartymusic", d: "Crypto commentator and macro analyst." }
+        ],
+        "₿ Bitcoin Strategy": [
+            { n: "Bitcoin Treasury Capital", h: "BitcoinTCAB", d: "Pure-play Bitcoin treasury company." },
+            { n: "Hurdle Rate Podcast", h: "HurdleRatePod", d: "Market returns and investment benchmarks." },
+            { n: "True North", h: "MSTRTrueNorth", d: "Focusing on investment-grade Bitcoin." },
+            { n: "mNAV.com", h: "BitcoinPowerLaw", d: "Bitcoin treasury analytics and Power Law models." },
+            { n: "Dan Hillery", h: "hillery_dan", d: "Head of Treasury at BuckToken." },
+            { n: "apsk32", h: "apsk32", d: "Data visualization on Bitcoin, space, and art." },
+            { n: "Strive Asset Management", h: "StriveFunds", d: "Focused on capitalism and Bitcoin." },
+            { n: "Lourenço VS", h: "lourenco_vs", d: "Market analyst using technical charts." },
+            { n: "Hermes Lux", h: "HermesLux", d: "Contributor at Bitcoin for Corporations." },
+            { n: "Pio", h: "piovincenzo_", d: "Co-founder of BoDoggos." },
+            { n: "BitcoinTreasuries.NET", h: "BTCtreasuries", d: "Data for Bitcoin capital markets adoption." }
+        ],
+        "📊 On-Chain & Quants": [
+            { n: "Stockmoney Lizards", h: "StockmoneyL", d: "Data-driven Bitcoin and crypto analytics." },
+            { n: "The Bitcoin Researcher", h: "ResearchBTCNow", d: "On-chain Bitcoin data from a private node." },
+            { n: "Bold", h: "boldleonidas", d: "Daily hand-drawn Bitcoin comics and memes." },
+            { n: "Plan C", h: "TheRealPlanC", d: "Creator of the Bitcoin Quantile Model." },
+            { n: "_Checkonchain", h: "_checkonchain", d: "Comprehensive Bitcoin on-chain analysis." },
+            { n: "ecoinometrics", h: "ecoinometrics", d: "Research on macro trends and ETF flows." },
+            { n: "CoinGlass", h: "coinglass_com", d: "Derivative data and liquidation heatmaps." },
+            { n: "CryptoQuant.com", h: "cryptoquant_com", d: "Leading on-chain data and analytics." },
+            { n: "Maartunn", h: "JA_Maartun", d: "Market watcher and Community Analyst." },
+            { n: "Misha", h: "mishadavinci", d: "Blockchain, AI, and future technologies." },
+			
+        ]
+    };
 
-        const frame = document.getElementById('x-frame');
-        const placeholder = document.getElementById('placeholder');
-        const directBtn = document.getElementById('direct-link');
-        const url = `https://x.com/${username}`;
+	  // Load user preferences with default starred users
+    const defaultStarred = ['thejefflutz', 'JOBhakdi', 'CernBasher', 'lourenco_vs', 'jvisserlabs', 'AndreasSteno', 'BittelJulien', 'charliebilello', 'hillery_dan', 'HermesLux', 'StockmoneyL', 'JA_Maartun'];
+    let starred = JSON.parse(localStorage.getItem('x_starred') || JSON.stringify(defaultStarred));
+    
 
-        // Attempt to load. 
-        // NOTE: Most browsers/X headers block iframing the full site for security.
-        // This will work in a local environment or specific browser setups.
-        frame.src = url;
+    // Load user preferences
+    
+    let customUsers = JSON.parse(localStorage.getItem('x_custom') || '[]');
+
+    function render() {
+        const dashboard = document.getElementById('dashboard');
+        dashboard.innerHTML = '';
         
-        // Provide a fallback link in case X blocks the frame (very common)
-        placeholder.style.display = "flex";
-        directBtn.style.display = "block";
-        directBtn.innerHTML = `Open @${username} on X.com`;
-        directBtn.onclick = () => window.open(url, '_blank');
+        for (const [category, users] of Object.entries(defaultData)) {
+            const col = document.createElement('div');
+            col.className = 'column';
+            
+            const header = document.createElement('div');
+            header.className = 'column-header';
+            header.innerText = category;
+            col.appendChild(header);
+
+            // Combine with custom users for this category (optional logic)
+            // For now, sorting logic handles the "top" placement
+            const sortedUsers = [...users].sort((a, b) => {
+                const aStarred = starred.includes(a.h) ? 1 : 0;
+                const bStarred = starred.includes(b.h) ? 1 : 0;
+                return bStarred - aStarred;
+            });
+
+            sortedUsers.forEach(user => col.appendChild(createUserCard(user)));
+
+            // Add Input box to the last column
+            if (category === "📊 On-Chain & Quants") {
+                const addBox = document.createElement('div');
+                addBox.className = 'add-area';
+                addBox.innerHTML = `
+                    <input type="text" id="new-n" placeholder="Display Name">
+                    <input type="text" id="new-h" placeholder="@handle">
+                    <button id="add-btn" onclick="addNew()">Add User</button>
+                `;
+                col.appendChild(addBox);
+            }
+
+            dashboard.appendChild(col);
+        }
     }
 
-    function addNewUser() {
-        const input = document.getElementById('username-input');
-        const user = input.value.trim().replace('@', '');
-        if (!user) return;
-
-        const list = document.getElementById('user-list');
-        const newBtn = document.createElement('button');
-        newBtn.className = 'user-btn';
-        newBtn.innerText = `@${user}`;
-        newBtn.onclick = function() { openUser(user, newBtn); };
-        
-        list.appendChild(newBtn);
-        input.value = '';
+    function createUserCard(user) {
+        const isStarred = starred.includes(user.h);
+        const a = document.createElement('a');
+        a.className = `user-card ${isStarred ? 'starred' : ''}`;
+        a.href = `https://x.com/${user.h}`;
+        a.target = "_blank";
+        a.innerHTML = `
+            <button class="star-btn" onclick="toggleStar(event, '${user.h}')">${isStarred ? '★' : '☆'}</button>
+            <span class="user-name">${user.n}</span>
+            <span class="user-handle">@${user.h}</span>
+            <span class="user-desc">${user.d}</span>
+        `;
+        return a;
     }
+
+    function toggleStar(event, handle) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (starred.includes(handle)) {
+            starred = starred.filter(h => h !== handle);
+        } else {
+            starred.push(handle);
+        }
+        localStorage.setItem('x_starred', JSON.stringify(starred));
+        render();
+    }
+
+    function addNew() {
+        const name = document.getElementById('new-n').value;
+        const handle = document.getElementById('new-h').value.replace('@', '');
+        if (!name || !handle) return;
+        
+        // Push to specific category or a "Custom" list
+        defaultData["📊 On-Chain & Quants"].push({ n: name, h: handle, d: "Custom added user." });
+        render();
+    }
+
+    render();
 </script>
 
 </body>
