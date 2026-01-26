@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2030 Investment Portfolio - 3x3 Grid</title>
+    <style>
+        :root {
+            --bg-dark: #0b0f1a;
+            --card-bg: #161b22;
+            --text-white: #f0f6fc;
+            --text-gray: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-yellow: #d29922;
+            --border-color: #30363d;
+            --highlight-bg: rgba(88, 166, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            max-width: 800px;
+        }
+
+        h1 { font-size: 36px; margin-bottom: 10px; font-weight: 800; }
+        .subtitle { color: var(--text-gray); font-size: 18px; }
+
+        /* The 3x3 Grid Container */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Exactly 3 columns */
+            gap: 24px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        /* Responsive: 2 columns on tablets, 1 on mobile */
+        @media (max-width: 1100px) { .grid-container { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 700px) { .grid-container { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-blue);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .icon { font-size: 32px; }
+
+        .tam-box { text-align: right; }
+        .tam-val { display: block; font-size: 22px; font-weight: 800; color: var(--accent-blue); }
+        .tam-label { font-size: 10px; text-transform: uppercase; color: var(--text-gray); letter-spacing: 1px; }
+
+        h2 { margin: 0; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .theme-tag { color: var(--accent-blue); font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 16px; display: block; }
+
+        .desc { color: var(--text-gray); font-size: 14px; line-height: 1.5; margin-bottom: 20px; flex-grow: 1; }
+
+        .insight {
+            background: var(--highlight-bg);
+            border-left: 3px solid var(--accent-blue);
+            padding: 10px;
+            font-size: 12px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .plays-title { color: var(--accent-yellow); font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+        
+        .pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>2030 Strategic Vision</h1>
+        <p class="subtitle">A 3x3 analysis of the nine core themes shaping the next decade's economy.</p>
+    </header>
+
+    <div class="grid-container">
+
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🚗</span>
+                <div class="tam-box">
+                    <span class="tam-val">$34T</span>
+                    <span class="tam-label">Enterprise Value</span>
+                </div>
+            </div>
+            <h2>Autonomous Vehicles</h2>
+            <span class="theme-tag">Transportation</span>
+            <p class="desc">The shift to AI-driven robo-taxis, aiming to capture the massive ride-sharing market at a fraction of current costs.</p>
+            <div class="insight">Largest single driver of the 2030 portfolio value.</div>
+            <div class="plays-title">Top 3 Plays</div>
+            <div class="pill-group">
+                <div class="pill">Tesla</div><div class="pill">Waymo</div><div class="pill">Baidu</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">₿</span>
+                <div class="tam-box">
+                    <span class="tam-val">$28T</span>
+                    <span class="tam-label">Market Cap</span>
+                </div>
+            </div>
+            <h2>Bitcoin & Digital Assets</h2>
+            <span class="theme-tag">FinTech</span>
+            <p class="desc">Transition of Bitcoin to a primary global reserve asset and the backbone of decentralized finance.</p>
+            <div class="insight">Institutional adoption acting as a significant price catalyst.</div>
+            <div class="plays-title">Top 3 Plays</div>
+            <div class="pill-group">
+                <div class="pill">Bitcoin</div><div class="pill">Ethereum</div><div class="pill">Solana</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🤖</span>
+                <div class="tam-box">
+                    <span class="tam-val">$26T</span>
+                    <span class="tam-label">Market Cap</span>
+                </div>
+            </div>
+            <h2>Humanoid Robotics</h2>
+            <span class="theme-tag">Automation</span>
+            <p class="desc">General-purpose robots solving labor shortages in manufacturing, logistics, and eventually the home.</p>
+            <div class="insight">Solving the "unstructured task" problem is the key to this TAM.</div>
+            <div class="plays-title">Top 3 Plays</div>
+            <div class="pill-group">
+                <div class="pill">Tesla (Optimus)</div><div class="pill">Figure AI</div><div class="pill">Boston Dynamics</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">💎</span>
+                <div class="tam-box">
+                    <span class="tam-val">$11T</span>
+                    <span class="tam-label">Market Value</span>
+                </div>
+            </div>
+            <h2>Tokenized Assets</h2>
+            <span class="theme-tag">Web3 Finance</span>
+            <p class="desc">Bringing traditional assets (stocks, real estate, debt) on-chain for 24/7 liquidity and instant settlement.</p>
+            <div class="insight">Disrupting legacy brokerage and clearing-house fees.</div>
+            <div class="plays-title">Top 3 Plays</div>
+            <div class="pill-group">
+                <div class="pill">Ethereum</div><div class="pill">Solana</div><div class="pill">BlackRock</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🔋</span>
+                <div class="tam-box">
+                    <span class="tam-val">$10T</span>
+                    <span class="tam-label">Market Size</span>
+                </div>
+            </div>
+            <h2>Energy Storage</h2>
+            <span class="theme-tag">Sustainability</span>
+            <p class="desc">Mass-scale battery deployments to stabilize renewable energy grids and power global EV fleets.</p>
+            <div class="insight">Lithium-ion and Sodium-ion battery cost curves are the drivers.</div>
+            <div class="plays-title">Top 3 Plays</div>
+            <div class="pill-group">
+                <div class="pill">Tesla (Energy)</div><div class="pill">Fluence</div><div class="pill">NextEra</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🧠</span>
+                <div class="tam-box">
+                    <span class="tam-val">$8T</span>
+                    <span class="tam-label">Economic Value</span>
+                </div>
+            </div>
+            <h2>AI Agents</h2>
+            <span class="theme-tag">Consumer Tech</span>
+            <p class="desc">Personalized AI Operating Systems handling daily tasks, commerce, and complex decision-making.</p>
+            <div class="insight">Agents are expected to capture a % of total global commerce.</div>
+            <div class="plays-title">Top 3 Plays</div>
+            <div class="pill-group">
+                <div class="pill">xAI</div><div class="pill">Microsoft</div><div class="pill">OpenAI</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🧬</span>
+                <div class="tam-box">
+                    <span class="tam-val">$2.8T</span>
+                    <span class="tam-label">Enterprise Value</span>
+                </div>
+            </div>
+            <h2>Multiomics</h2>
+            <span class="theme-tag">HealthTech</span>
+            <p class="desc">Integrating genomic data with AI to create personalized medicine and permanent cures for genetic disease.</p>
+            <div class="insight">CRISPR and gene editing are moving from research to cure.</div>
+            <div class="plays-title">Top 3 Plays</div>
+            <div class="pill-group">
+                <div class="pill">CRISPR Tx</div><div class="pill">Beam Tx</div><div class="pill">Intellia</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🚀</span>
+                <div class="tam-box">
+                    <span class="tam-val">$2.5T</span>
+                    <span class="tam-label">Opportunity</span>
+                </div>
+            </div>
+            <h2>Space Logistics</h2>
+            <span class="theme-tag">Aerospace</span>
+            <p class="desc">Collapsing the cost of orbit access to enable global high-speed internet and hypersonic point-to-point travel.</p>
+            <div class="insight">Fully reusable rockets (Starship) are the key unlock.</div>
+            <div class="plays-title">Top 3 Plays</div>
+            <div class="pill-group">
+                <div class="pill">SpaceX</div><div class="pill">Rocket Lab</div><div class="pill">AST SpaceMobile</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🔌</span>
+                <div class="tam-box">
+                    <span class="tam-val">$1.4T</span>
+                    <span class="tam-label">Hardware TAM</span>
+                </div>
+            </div>
+            <h2>AI Infrastructure</h2>
+            <span class="theme-tag">Compute</span>
+            <p class="desc">The silicon and data center foundation required to train and run the world's burgeoning AI models.</p>
+            <div class="insight">Shift from general compute to specialized AI accelerators.</div>
+            <div class="plays-title">Top 3 Plays</div>
+            <div class="pill-group">
+                <div class="pill">Nvidia</div><div class="pill">Broadcom</div><div class="pill">Tesla (Dojo)</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

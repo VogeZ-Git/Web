@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA Miner Model v5.0 - Institutional SOPP Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; font-size: 11px; background-color: #020617; color: #f1f5f9; }
+        .sticky-col { position: sticky; left: 0; background: #0f172a; z-index: 20; border-right: 2px solid #1e293b; }
+        input, select { font-weight: bold; text-align: center; border: 1px solid #334155; background: #020617; padding: 4px; color: #38bdf8; border-radius: 4px; }
+        .heatmap-cell { font-weight: 800; }
+        .positive { color: #4ade80; } .negative { color: #f87171; }
+    </style>
+</head>
+<body class="p-4 lg:p-8">
+
+    <div class="max-w-[1750px] mx-auto">
+        <header class="mb-6 flex flex-col xl:flex-row justify-between items-start bg-slate-900 border border-slate-700 p-6 rounded-2xl shadow-2xl gap-6">
+            <div class="flex-1">
+                <h1 class="text-4xl font-black tracking-tighter italic text-white leading-none">IA MINER MODEL <span class="text-blue-500">v5.0</span></h1>
+                <p class="text-blue-400 font-bold uppercase text-[10px] tracking-[0.2em] mt-2 italic underline decoration-blue-500/30">Institutional Infrastructure Arbitrage Matrix</p>
+                
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 bg-slate-800/40 rounded-lg border border-slate-700 text-[10px] leading-relaxed text-slate-400">
+                        <strong class="text-blue-300 uppercase block mb-1">Calculation Methodology:</strong>
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li><b class="text-slate-200">Enterprise Value (EV):</b> (Market Cap + Debt) - (BTC Held × Price). This represents the "Net Cost" of the operations and power.</li>
+                            <li><b class="text-slate-200">Mining Ops Val:</b> (Monthly Production × 12 × Price × Margin %) × Multiple.</li>
+                            <li><b class="text-slate-200">Infra Val:</b> (Op Power × $MW) + (Pipeline × $MW × Risk Factor).</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-slate-800/40 rounded-lg border border-slate-700 text-[10px] leading-relaxed text-slate-400">
+                        <strong class="text-orange-400 uppercase block mb-1">Future Targets Logic:</strong>
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li><b class="text-slate-200">Dilution Hedge:</b> Target price is adjusted for 1-year forward share issuance.</li>
+                            <li><b class="text-slate-200">SOPP Target:</b> Sum of (Treasury + Mining Ops + Infra) / Diluted Shares.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-4 bg-slate-950 p-5 rounded-xl border border-blue-900/30">
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-black text-slate-500 uppercase mb-1">BTC Price</label>
+                    <input id="global-btc" type="number" value="92000" class="w-24" onchange="render()">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-black text-slate-500 uppercase mb-1">AI/MW Target ($M)</label>
+                    <input id="global-mw-val" type="number" value="15" class="w-24" onchange="render()">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-black text-slate-500 uppercase mb-1">Pipe Risk Factor</label>
+                    <select id="global-pipe-risk" class="w-28" onchange="render()">
+                        <option value="0.25">25% (Safe)</option>
+                        <option value="0.50" selected>50% (Standard)</option>
+                        <option value="0.75">75% (Bullish)</option>
+                    </select>
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-black text-slate-500 uppercase mb-1">Mining Margin %</label>
+                    <input id="global-margin" type="number" value="40" class="w-20" onchange="render()">
+                </div>
+            </div>
+        </header>
+
+        <div class="mb-8 rounded-xl border border-slate-800 bg-slate-900 overflow-hidden shadow-lg">
+            <div class="p-3 bg-slate-800/50 border-b border-slate-800 font-black text-slate-400 uppercase text-[10px]">1. Operational Inputs & Debt Load</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-center border-collapse">
+                    <thead class="bg-slate-950 text-slate-500 text-[9px] uppercase">
+                        <tr>
+                            <th class="px-4 py-3 text-left sticky-col">Ticker</th>
+                            <th>MC ($M)</th>
+                            <th>Debt ($M)</th>
+                            <th>BTC Held</th>
+                            <th class="text-green-400">Mo. Prod (BTC)</th>
+                            <th class="text-blue-400">Op Power (MW)</th>
+                            <th class="text-purple-400">Pipeline (MW)</th>
+                            <th>Shares (M)</th>
+                            <th class="text-orange-400">Dilution %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="input-body" class="divide-y divide-slate-800"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="rounded-xl border border-blue-900/30 bg-slate-900 overflow-hidden shadow-2xl">
+            <div class="p-3 bg-blue-900/20 border-b border-blue-900/30 font-black text-blue-400 uppercase text-[10px] flex justify-between items-center">
+                <span>2. 2026 Fair Value Derivation (SOPP Model)</span>
+                <span class="text-[9px] text-slate-500">Target price includes 12-month projected dilution impact</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-center border-collapse">
+                    <thead class="bg-slate-950 text-slate-500 text-[9px] uppercase border-b border-slate-800">
+                        <tr>
+                            <th class="px-4 py-4 text-left sticky-col">Ticker</th>
+                            <th title="MC + Debt - BTC Value">Adj. EV</th>
+                            <th>Mining Ops Val</th>
+                            <th>Power Infra Val</th>
+                            <th class="bg-blue-900/10 text-blue-300">Total Fair Cap</th>
+                            <th class="bg-blue-900/20 text-blue-400 font-black">2026 Target</th>
+                            <th class="font-black text-white">Upside %</th>
+                            <th class="px-4 text-left">2026 Valuation Narrative</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fair-value-body" class="divide-y divide-slate-800"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let miners = [
+            { ticker: 'IREN', mc: 17800, debt: 900, btc: 0, prod: 668, power: 810, pipeline: 3000, shares: 283, dilution: 15, narr: 'Pure-play infrastructure lead; highest conversion efficiency to AI cloud.' },
+            { ticker: 'MARA', mc: 3900, debt: 3600, btc: 53250, prod: 736, power: 1800, pipeline: 1500, shares: 378, dilution: 35, narr: 'Heavy debt load and dilution offset by massive liquid BTC treasury.' },
+            { ticker: 'CIFR', mc: 7100, debt: 1000, btc: 1500, prod: 219, power: 3000, pipeline: 3400, shares: 395, dilution: 10, narr: 'Infrastructure Arbitrage King; massive 6.4GW total power pipeline.' },
+            { ticker: 'CLSK', mc: 3400, debt: 900, btc: 13099, prod: 622, power: 808, pipeline: 1300, shares: 282, dilution: 20, narr: 'Balanced miner with high organic growth and moderate dilution profile.' },
+            { ticker: 'CORZ', mc: 5900, debt: 1000, btc: 2166, prod: 256, power: 1200, pipeline: 1200, shares: 310, dilution: 12, narr: 'First-mover in HPC pivot; CoreWeave partnership sets valuation floor.' },
+            { ticker: 'RIOT', mc: 6700, debt: 900, btc: 18005, prod: 460, power: 1700, pipeline: 1700, shares: 372, dilution: 25, narr: 'Strong power assets but trailing peers in AI-pivot execution speed.' },
+            { ticker: 'HUT', mc: 6300, debt: 300, btc: 13696, prod: 180, power: 850, pipeline: 1530, shares: 108, dilution: 22, narr: 'Diversified income streams: BTC holdings, managed services, and GPU cloud.' },
+            { ticker: 'BITF', mc: 1600, debt: 100, btc: 1166, prod: 218, power: 341, pipeline: 2100, shares: 345, dilution: 28, narr: 'Undervalued power pipeline; potential M&A target for hyperscalers.' },
+            { ticker: 'HIVE', mc: 800, debt: 20, btc: 2200, prod: 306, power: 440, pipeline: 540, shares: 115, dilution: 18, narr: 'Niche player with efficient fleet and high green-energy focus.' },
+            { ticker: 'GLXY', mc: 13000, debt: 5400, btc: 6894, prod: 140, power: 1600, pipeline: 1600, shares: 315, dilution: 15, narr: 'Institutional crypto hub; mining is secondary to financial services/asset management.' }
+        ];
+
+        function updateVal(i, key, val) {
+            miners[i][key] = parseFloat(val) || 0;
+            render();
+        }
+
+        function render() {
+            const btcPrice = parseFloat(document.getElementById('global-btc').value);
+            const mwVal = parseFloat(document.getElementById('global-mw-val').value);
+            const pipeRisk = parseFloat(document.getElementById('global-pipe-risk').value);
+            const margin = parseFloat(document.getElementById('global-margin').value) / 100;
+
+            const inputTable = document.getElementById('input-body');
+            const fairTable = document.getElementById('fair-value-body');
+
+            inputTable.innerHTML = miners.map((m, i) => `
+                <tr class="divide-x divide-slate-800">
+                    <td class="px-4 py-2 text-left sticky-col font-black text-slate-300">${m.ticker}</td>
+                    <td><input type="number" value="${m.mc}" onchange="updateVal(${i}, 'mc', this.value)"></td>
+                    <td><input type="number" value="${m.debt}" onchange="updateVal(${i}, 'debt', this.value)"></td>
+                    <td><input type="number" value="${m.btc}" onchange="updateVal(${i}, 'btc', this.value)"></td>
+                    <td><input type="number" value="${m.prod}" class="text-green-400" onchange="updateVal(${i}, 'prod', this.value)"></td>
+                    <td><input type="number" value="${m.power}" class="text-blue-400" onchange="updateVal(${i}, 'power', this.value)"></td>
+                    <td><input type="number" value="${m.pipeline}" class="text-purple-400" onchange="updateVal(${i}, 'pipeline', this.value)"></td>
+                    <td><input type="number" value="${m.shares}" onchange="updateVal(${i}, 'shares', this.value)"></td>
+                    <td><input type="number" value="${m.dilution}" class="text-orange-400" onchange="updateVal(${i}, 'dilution', this.value)"></td>
+                </tr>
+            `).join('');
+
+            fairTable.innerHTML = miners.map(m => {
+                const treasuryVal = (m.btc * btcPrice) / 1000000;
+                const adjEv = m.mc + m.debt - treasuryVal;
+                
+                // Valuation Components
+                const annualRev = m.prod * 12 * btcPrice / 1000000;
+                const miningVal = (annualRev * margin) * 5; // 5x EBITDA Multiple for 2026
+                const infraVal = (m.power + (m.pipeline * pipeRisk)) * mwVal;
+                
+                // Final Targets
+                const fairCap = treasuryVal + miningVal + infraVal;
+                const forwardShares = m.shares * (1 + (m.dilution / 100));
+                const priceTarget = (fairCap - m.debt) / forwardShares;
+                const currentPrice = m.mc / m.shares;
+                const upside = ((priceTarget / currentPrice) - 1) * 100;
+
+                return `
+                    <tr class="divide-x divide-slate-800 hover:bg-slate-800/30">
+                        <td class="px-4 py-4 text-left sticky-col font-black text-slate-300">${m.ticker}</td>
+                        <td class="text-slate-400">$${Math.round(adjEv)}M</td>
+                        <td class="text-green-500/80">$${Math.round(miningVal)}M</td>
+                        <td>$${Math.round(infraVal)}M</td>
+                        <td class="bg-blue-900/10 font-black text-blue-200">$${Math.round(fairCap)}M</td>
+                        <td class="bg-blue-900/20 font-black text-blue-400 text-sm">$${priceTarget.toFixed(2)}</td>
+                        <td class="font-black ${upside > 0 ? 'text-green-400' : 'text-red-400'}">${upside.toFixed(1)}%</td>
+                        <td class="px-4 py-4 text-left text-slate-500 italic text-[10px] max-w-xs leading-tight">${m.narr}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        render();
+    </script>
+</body>
+</html>
