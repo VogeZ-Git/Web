@@ -1027,5 +1027,265 @@
     `;
   }
 </script>
+
+
+
+<!-- BLACK-SCHOLES CALCULATOR -->
+<div class="bs-section">
+  <div class="manual-header" style="margin-bottom:20px;">
+    <span class="manual-tag">// CALCULATOR</span>
+    <span class="manual-title">Black-Scholes Delta Calculator</span>
+  </div>
+  <p class="bs-desc">Calculate the theoretical delta of any MSTR strike manually. Enter the current stock price, your target strike, DTE, the current IV for that contract, and the risk-free rate. Useful for verifying your broker's delta or checking strikes not yet visible on the chain.</p>
+
+  <div class="bs-grid">
+    <div class="bs-input-block">
+      <label>Stock Price (S)<span>current</span></label>
+      <div class="input-wrapper">
+        <input type="number" id="bs_S" value="370" step="0.01"/>
+        <span class="input-unit">$</span>
+      </div>
+    </div>
+    <div class="bs-input-block">
+      <label>Strike Price (K)<span>target</span></label>
+      <div class="input-wrapper">
+        <input type="number" id="bs_K" value="450" step="0.01"/>
+        <span class="input-unit">$</span>
+      </div>
+    </div>
+    <div class="bs-input-block">
+      <label>Days to Expiry<span>DTE</span></label>
+      <div class="input-wrapper">
+        <input type="number" id="bs_T" value="40" step="1"/>
+        <span class="input-unit">days</span>
+      </div>
+    </div>
+    <div class="bs-input-block">
+      <label>Implied Volatility<span>IV %</span></label>
+      <div class="input-wrapper">
+        <input type="number" id="bs_IV" value="120" step="0.1"/>
+        <span class="input-unit">%</span>
+      </div>
+    </div>
+    <div class="bs-input-block">
+      <label>Risk-Free Rate<span>r %</span></label>
+      <div class="input-wrapper">
+        <input type="number" id="bs_r" value="4.3" step="0.01"/>
+        <span class="input-unit">%</span>
+      </div>
+    </div>
+    <div class="bs-input-block">
+      <label>Option Type</label>
+      <div class="toggle-group" id="bs_type" style="margin-bottom:0;height:51px;">
+        <button class="toggle-btn active" data-val="call" onclick="setToggle('bs_type',this)" style="font-size:0.8rem;">Call</button>
+        <button class="toggle-btn" data-val="put" onclick="setToggle('bs_type',this)" style="font-size:0.8rem;">Put</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="analyze-btn" style="margin-top:4px;" onclick="calcBS()">Calculate Delta &rarr;</button>
+
+  <div class="bs-result" id="bs_result" style="display:none;">
+    <div class="bs-result-grid">
+      <div class="bs-metric">
+        <div class="metric-label">Delta (&Delta;)</div>
+        <div class="metric-value" id="bs_out_delta">&mdash;</div>
+      </div>
+      <div class="bs-metric">
+        <div class="metric-label">d1</div>
+        <div class="metric-value neutral" id="bs_out_d1" style="font-size:0.9rem;">&mdash;</div>
+      </div>
+      <div class="bs-metric">
+        <div class="metric-label">N(d1)</div>
+        <div class="metric-value neutral" id="bs_out_nd1" style="font-size:0.9rem;">&mdash;</div>
+      </div>
+      <div class="bs-metric">
+        <div class="metric-label">Moneyness</div>
+        <div class="metric-value" id="bs_out_money" style="font-size:0.82rem;">&mdash;</div>
+      </div>
+    </div>
+    <div class="bs-formula" id="bs_formula"></div>
+    <div class="bs-verdict" id="bs_verdict"></div>
+  </div>
+</div>
+
+<style>
+  .bs-section {
+    max-width: 720px;
+    margin: 32px auto 60px;
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+  }
+  .bs-desc {
+    font-size: 0.83rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .bs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .bs-input-block label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .bs-input-block label span { color: var(--gold); }
+  .bs-input-block .input-wrapper input {
+    font-size: 1.1rem;
+    padding: 10px 44px 10px 12px;
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+  .bs-input-block .input-wrapper input::-webkit-inner-spin-button,
+  .bs-input-block .input-wrapper input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .bs-input-block .input-wrapper input:focus { border-color: var(--gold); }
+  .bs-result {
+    margin-top: 16px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .bs-result-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+  .bs-metric {
+    background: var(--bg2);
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .bs-formula {
+    padding: 10px 18px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: #444;
+    border-top: 1px solid var(--border);
+    line-height: 1.7;
+    letter-spacing: 0.03em;
+  }
+  .bs-verdict {
+    padding: 14px 18px;
+    font-size: 0.83rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+  }
+  .bs-verdict strong { font-weight: 600; color: var(--text); }
+  .bs-verdict .tag-10   { color: var(--green); }
+  .bs-verdict .tag-warn { color: var(--orange); }
+  .bs-verdict .tag-bad  { color: var(--red); }
+  @media (max-width: 560px) {
+    .bs-grid { grid-template-columns: 1fr 1fr; }
+    .bs-result-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<script>
+  // Standard normal CDF — Abramowitz & Stegun / Hart approximation
+  function normalCDF(x) {
+    var a1= 0.254829592, a2=-0.284496736, a3= 1.421413741,
+        a4=-1.453152027, a5= 1.061405429, p = 0.3275911;
+    var sign = x < 0 ? -1 : 1;
+    x = Math.abs(x) / Math.sqrt(2);
+    var t = 1.0 / (1.0 + p * x);
+    var y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t * Math.exp(-x*x);
+    return 0.5 * (1.0 + sign * y);
+  }
+
+  function calcBS() {
+    var S  = parseFloat(document.getElementById('bs_S').value);
+    var K  = parseFloat(document.getElementById('bs_K').value);
+    var T  = parseFloat(document.getElementById('bs_T').value) / 365.0;
+    var IV = parseFloat(document.getElementById('bs_IV').value) / 100.0;
+    var r  = parseFloat(document.getElementById('bs_r').value)  / 100.0;
+    var type = getToggleVal('bs_type');
+
+    var resultDiv = document.getElementById('bs_result');
+    var verdictDiv = document.getElementById('bs_verdict');
+    resultDiv.style.display = 'block';
+
+    if ([S,K,T,IV,r].some(function(v){ return isNaN(v) || v <= 0; })) {
+      verdictDiv.innerHTML = '<span class="tag-bad">&#9888; All fields must be filled with positive numbers.</span>';
+      return;
+    }
+
+    var sqrtT = Math.sqrt(T);
+    var d1 = (Math.log(S / K) + (r + 0.5 * IV * IV) * T) / (IV * sqrtT);
+    var d2 = d1 - IV * sqrtT;
+    var Nd1 = normalCDF(d1);
+    var Nd2 = normalCDF(d2);
+
+    var delta    = type === 'call' ? Nd1 : Nd1 - 1;
+    var absDelta = Math.abs(delta) * 100;
+    var deltaExact = (delta * 100).toFixed(2);
+    var dInt = Math.round(absDelta);
+
+    // Moneyness
+    var ratio = S / K;
+    var moneyness, moneyColor;
+    if (Math.abs(ratio - 1) < 0.005) {
+      moneyness = 'At-the-Money';     moneyColor = 'var(--gold)';
+    } else if (type === 'call' ? ratio > 1 : ratio < 1) {
+      moneyness = 'In-the-Money';     moneyColor = 'var(--green)';
+    } else {
+      moneyness = 'Out-of-the-Money'; moneyColor = 'var(--text-dim)';
+    }
+
+    // Formula trace
+    document.getElementById('bs_formula').innerHTML =
+      'd1 = [ ln(' + S + '/' + K + ') + (' + (r*100).toFixed(2) + '% + 0.5 &times; ' + (IV*100).toFixed(1) + '%&sup2;) &times; ' + (T*365).toFixed(0) + 'd/365 ] &divide; (' + (IV*100).toFixed(1) + '% &times; &radic;' + (T*365).toFixed(0) + '/365)' +
+      '&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;' + d1.toFixed(4) +
+      '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+      'N(d1) = ' + Nd1.toFixed(4) +
+      '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+      'Delta = ' + (type === 'call' ? 'N(d1)' : 'N(d1) - 1') + ' = ' + deltaExact + '&#916;';
+
+    // Verdict
+    var v = '';
+    if (absDelta <= 8) {
+      v = '<span class="tag-10">&#10003; ' + dInt + '&#916; &mdash; Below target.</span> Strike is well OTM. Good landing zone when rolling down for extra credit, or wait for the stock to drift it back to 10&#916;.';
+    } else if (absDelta <= 12) {
+      v = '<span class="tag-10">&#10003; ' + dInt + '&#916; &mdash; On target.</span> This strike sits in the ideal 10&#916; zone. <strong>Good strike to sell at 40 DTE.</strong>';
+    } else if (absDelta <= 18) {
+      v = '<span class="tag-warn">~ ' + dInt + '&#916; &mdash; Slightly elevated.</span> Acceptable when rolling up on a running stock, but not ideal for a fresh open. Try one or two strikes higher to get closer to 10&#916;.';
+    } else if (absDelta <= 30) {
+      v = '<span class="tag-warn">&#9888; ' + dInt + '&#916; &mdash; Above target.</span> Too hot for an opening position. Only use this level when rolling aggressively to match a delta that has already drifted this high.';
+    } else {
+      v = '<span class="tag-bad">&#128680; ' + dInt + '&#916; &mdash; Danger zone.</span> Assignment risk is real at this level. If your live position is showing this delta, roll immediately or use the decision framework above.';
+    }
+    verdictDiv.innerHTML = v;
+
+    // Render output fields
+    var deltaEl = document.getElementById('bs_out_delta');
+    deltaEl.textContent = deltaExact + '\u0394';
+    deltaEl.className = 'metric-value ' + (absDelta <= 12 ? 'good' : absDelta <= 22 ? 'warn' : 'bad');
+
+    document.getElementById('bs_out_d1').textContent  = d1.toFixed(4);
+    document.getElementById('bs_out_nd1').textContent = Nd1.toFixed(4);
+
+    var moneyEl = document.getElementById('bs_out_money');
+    moneyEl.textContent = moneyness;
+    moneyEl.style.color = moneyColor;
+  }
+</script>
 </body>
 </html>
