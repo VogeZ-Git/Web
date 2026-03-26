@@ -749,17 +749,12 @@
   }
 
   function buildRollResult(delta, dte, direction, profit) {
-    // Early profit take suggestion
     if (profit >= 75) {
       return buildEarlyProfitResult(delta, dte, profit);
     }
-
-    // Very low DTE — must roll regardless
     if (dte < 25) {
       return buildMustRollResult(delta, dte, direction);
     }
-
-    // Delta-based routing
     if (delta <= 8) {
       return buildStockFellResult(delta, dte, profit);
     } else if (delta <= 13) {
@@ -1200,7 +1195,6 @@
 </style>
 
 <script>
-  // Standard normal CDF — Abramowitz & Stegun / Hart approximation
   function normalCDF(x) {
     var a1= 0.254829592, a2=-0.284496736, a3= 1.421413741,
         a4=-1.453152027, a5= 1.061405429, p = 0.3275911;
@@ -1239,7 +1233,6 @@
     var deltaExact = (delta * 100).toFixed(2);
     var dInt = Math.round(absDelta);
 
-    // Moneyness
     var ratio = S / K;
     var moneyness, moneyColor;
     if (Math.abs(ratio - 1) < 0.005) {
@@ -1250,7 +1243,6 @@
       moneyness = 'Out-of-the-Money'; moneyColor = 'var(--text-dim)';
     }
 
-    // Formula trace
     document.getElementById('bs_formula').innerHTML =
       'd1 = [ ln(' + S + '/' + K + ') + (' + (r*100).toFixed(2) + '% + 0.5 &times; ' + (IV*100).toFixed(1) + '%&sup2;) &times; ' + (T*365).toFixed(0) + 'd/365 ] &divide; (' + (IV*100).toFixed(1) + '% &times; &radic;' + (T*365).toFixed(0) + '/365)' +
       '&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;' + d1.toFixed(4) +
@@ -1259,7 +1251,6 @@
       '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
       'Delta = ' + (type === 'call' ? 'N(d1)' : 'N(d1) - 1') + ' = ' + deltaExact + '&#916;';
 
-    // Verdict
     var v = '';
     if (absDelta <= 8) {
       v = '<span class="tag-10">&#10003; ' + dInt + '&#916; &mdash; Below target.</span> Strike is well OTM. Good landing zone when rolling down for extra credit, or wait for the stock to drift it back to 10&#916;.';
@@ -1274,7 +1265,6 @@
     }
     verdictDiv.innerHTML = v;
 
-    // Render output fields
     var deltaEl = document.getElementById('bs_out_delta');
     deltaEl.textContent = deltaExact + '\u0394';
     deltaEl.className = 'metric-value ' + (absDelta <= 12 ? 'good' : absDelta <= 22 ? 'warn' : 'bad');
@@ -1287,5 +1277,478 @@
     moneyEl.style.color = moneyColor;
   }
 </script>
+
+<!-- ═══════════════════════════════════════════════════════
+     LIQUIDATION CONTINGENCY PLAN
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="contingency-section">
+
+  <div class="manual-header" style="margin-bottom: 20px;">
+    <span class="manual-tag">// CONTINGENCY</span>
+    <span class="manual-title">The MSTR 10Δ Liquidation Contingency Plan</span>
+  </div>
+
+  <!-- Framing block -->
+  <div class="contingency-intro">
+    <p>
+      Critics of the 10Δ strategy often fixate on one scenario: what happens if shares get called away? To the inexperienced, assignment feels catastrophic — as if the investment is permanently lost.
+      It isn't. This plan exists precisely for that moment. If you reach it, it means your portfolio just experienced a massive run-up. <strong>That is a good problem to have.</strong>
+    </p>
+    <p style="margin-top: 10px;">
+      The plan below covers the full recovery sequence — from assignment through buy-write re-entry and the gradual return to standard 10Δ management.
+    </p>
+  </div>
+
+  <!-- Stat bar -->
+  <div class="contingency-stat-bar">
+    <div class="cstat">
+      <div class="cstat-val">~3–5%</div>
+      <div class="cstat-label">Probability of assignment at 10Δ open</div>
+    </div>
+    <div class="cstat">
+      <div class="cstat-val">+IV</div>
+      <div class="cstat-label">Post-parabolic spike = higher premiums on re-entry</div>
+    </div>
+    <div class="cstat">
+      <div class="cstat-val">T+1</div>
+      <div class="cstat-label">Re-enter via buy-write next trading day</div>
+    </div>
+  </div>
+
+  <!-- Phase cards -->
+  <div class="phase-header">
+    <span class="manual-tag" style="margin-bottom:0;">Phase 1</span>
+    <span class="phase-title">Assignment Occurs</span>
+    <span class="phase-badge badge-red">Trigger Event</span>
+  </div>
+  <div class="contingency-card">
+    <div class="step">
+      <div class="step-num" style="background:rgba(255,77,77,0.1);color:var(--red);">!</div>
+      <div class="step-text">
+        For assignment to occur despite active rolling, MSTR would need a <strong>sustained parabolic surge</strong> — the kind where even 40 DTE rolls can no longer generate a credit at any strike. This is statistically rare, but it does happen (e.g. the Nov–Dec 2024 MSTR spike).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        Your 100 shares are <strong>called away at the strike price</strong>. Your account converts to cash. You keep every dollar of premium you collected across all prior rolls — that accumulated income is yours regardless.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Calculate your net effective exit price:</strong> Strike price received + all premium collected throughout the life of the position. This figure is your true realized gain — it will almost certainly exceed your original cost basis by a significant margin.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        Take the weekend. A parabolic MSTR run of the magnitude required to cause assignment is a <strong>wealth accumulation event</strong>. Treat it as one.
+      </div>
+    </div>
+  </div>
+
+  <!-- Info box: why assignment isn't the end -->
+  <div class="contingency-insight">
+    <div class="insight-icon">💡</div>
+    <div class="insight-body">
+      <div class="insight-title">Why parabolic runs work in your favor post-assignment</div>
+      <p>When MSTR spikes hard enough to cause assignment, implied volatility (IV) spikes with it — sometimes dramatically. Elevated IV means covered call premiums are at their richest. The very event that caused your assignment also sets up your best re-entry conditions. The strategy doesn't end at assignment; it resets at a higher level.</p>
+    </div>
+  </div>
+
+  <div class="phase-header">
+    <span class="manual-tag" style="margin-bottom:0;">Phase 2</span>
+    <span class="phase-title">Buy-Write Re-Entry</span>
+    <span class="phase-badge badge-gold">Next Trading Day</span>
+  </div>
+  <div class="contingency-card">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        At market open the next trading day, execute a <strong>buy-write</strong> — a single simultaneous transaction that buys 100 shares and sells a covered call in one order. Most brokers support this as a combo order.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        Unlike your normal 10Δ open, <strong>sell a higher-delta call</strong> for this buy-write. Why? Parabolic surges rarely sustain a second consecutive month-long run. A higher delta call (20–30Δ) gives you a much larger premium, dramatically lowering your new cost basis from day one.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Target the strike carefully:</strong> Choose a 40 DTE call at a delta level such that the premium received brings your effective cost basis <em>below</em> the strike price you were just assigned at. This is your new break-even anchor.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        <strong>Calculate your new break-even:</strong> <code>New cost basis = Purchase price − Premium received on buy-write − All prior premiums collected</code>. This number will be lower than you expect.
+      </div>
+    </div>
+  </div>
+
+  <!-- Break-even formula card -->
+  <div class="formula-card">
+    <div class="formula-label">// NEW COST BASIS FORMULA</div>
+    <div class="formula-line">
+      <span class="formula-term">New cost basis</span>
+      <span class="formula-eq">=</span>
+      <span class="formula-val">Repurchase price</span>
+      <span class="formula-op">−</span>
+      <span class="formula-val green">Buy-write premium</span>
+      <span class="formula-op">−</span>
+      <span class="formula-val green">All prior premiums collected</span>
+    </div>
+    <div class="formula-note">
+      The accumulated premium from months of theta decay means your effective cost basis on the new position is significantly lower than the raw repurchase price suggests.
+    </div>
+  </div>
+
+  <div class="phase-header">
+    <span class="manual-tag" style="margin-bottom:0;">Phase 3</span>
+    <span class="phase-title">Normalize Back to 10Δ</span>
+    <span class="phase-badge badge-green">Weeks 2 – 6+</span>
+  </div>
+  <div class="contingency-card">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        After the buy-write, resume <strong>weekly position checks</strong> using the standard framework above. With a higher-delta starting position, the delta will naturally decay as the stock stabilizes.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        MSTR historically consolidates after parabolic surges — exactly as it did from December 2024 through March 2025. Consolidation means <strong>theta works for you while delta drifts back down</strong> toward the 10Δ target zone.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        Each week, use the decision framework to roll back down: <strong>30Δ → 25Δ → 20Δ → 15Δ → 10Δ</strong>. Each roll generates credit. Each roll lowers the effective strike. The normalization process itself is profitable.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        Once you're back to 10Δ at 40 DTE, <strong>you're fully restored</strong> to standard operating mode — but with a lower cost basis, more premium in the bank, and the experience of having executed the contingency plan successfully.
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline visual -->
+  <div class="timeline-block">
+    <div class="timeline-label">// RECOVERY TIMELINE (ILLUSTRATIVE)</div>
+    <div class="timeline-track">
+      <div class="timeline-node node-red">
+        <div class="tnode-dot"></div>
+        <div class="tnode-label">Assignment</div>
+        <div class="tnode-sub">Shares called away</div>
+      </div>
+      <div class="timeline-connector"></div>
+      <div class="timeline-node node-gold">
+        <div class="tnode-dot"></div>
+        <div class="tnode-label">T+1</div>
+        <div class="tnode-sub">Buy-write at 25–30Δ</div>
+      </div>
+      <div class="timeline-connector"></div>
+      <div class="timeline-node node-orange">
+        <div class="tnode-dot"></div>
+        <div class="tnode-label">Wk 2–3</div>
+        <div class="tnode-sub">Roll down 25→20Δ</div>
+      </div>
+      <div class="timeline-connector"></div>
+      <div class="timeline-node node-orange">
+        <div class="tnode-dot"></div>
+        <div class="tnode-label">Wk 4–5</div>
+        <div class="tnode-sub">Roll down 20→15Δ</div>
+      </div>
+      <div class="timeline-connector"></div>
+      <div class="timeline-node node-green">
+        <div class="tnode-dot"></div>
+        <div class="tnode-label">Wk 6+</div>
+        <div class="tnode-sub">Restored to 10Δ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Closing mindset block -->
+  <div class="contingency-mindset">
+    <div class="mindset-bar"></div>
+    <div class="mindset-content">
+      <div class="mindset-title">The right mental model</div>
+      <p>
+        Without this plan, assignment feels like a disaster. With it, assignment is just a speed bump — a temporary detour that happens to come with a large cash deposit. The skeptics who dismiss covered call strategies rarely have a plan for what comes next. You do.
+        The math has always been on your side. The contingency plan simply makes that explicit.
+      </p>
+    </div>
+  </div>
+
+</div><!-- end contingency-section -->
+
+<style>
+  /* ── CONTINGENCY SECTION ────────────────────────────── */
+  .contingency-section {
+    max-width: 720px;
+    margin: 0 auto 60px;
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+  }
+
+  .contingency-intro {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold-dim);
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    font-size: 0.87rem;
+    color: var(--text-dim);
+    line-height: 1.65;
+  }
+  .contingency-intro strong { color: var(--text); font-weight: 600; }
+
+  /* ── STAT BAR ── */
+  .contingency-stat-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 24px;
+  }
+  .cstat {
+    background: var(--bg2);
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .cstat-val {
+    font-family: var(--mono);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .cstat-label {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* ── PHASE HEADER ── */
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 24px 0 10px;
+  }
+  .phase-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+  .phase-badge {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid;
+  }
+  .badge-red    { color: var(--red);    border-color: rgba(255,77,77,0.3);    background: rgba(255,77,77,0.06); }
+  .badge-gold   { color: var(--gold);   border-color: rgba(245,200,66,0.3);   background: rgba(245,200,66,0.06); }
+  .badge-green  { color: var(--green);  border-color: rgba(61,255,143,0.3);   background: rgba(61,255,143,0.06); }
+
+  /* ── CONTINGENCY CARD (reuses .steps style) ── */
+  .contingency-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .contingency-card .step { /* inherits global .step */ }
+
+  /* ── INSIGHT BOX ── */
+  .contingency-insight {
+    display: flex;
+    gap: 14px;
+    background: rgba(61,255,143,0.05);
+    border: 1px solid rgba(61,255,143,0.18);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+  .insight-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .insight-body { flex: 1; }
+  .insight-title {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .contingency-insight p {
+    font-size: 0.83rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── FORMULA CARD ── */
+  .formula-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
+  .formula-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .formula-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .formula-term {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .formula-eq, .formula-op {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+  .formula-val {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    background: var(--bg4);
+    padding: 3px 8px;
+  }
+  .formula-val.green { color: var(--green); }
+  .formula-note {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.55;
+    font-family: var(--mono);
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  /* ── TIMELINE ── */
+  .timeline-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 18px 20px 20px;
+    margin-bottom: 16px;
+  }
+  .timeline-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+  .timeline-track {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .timeline-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+  .tnode-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 0;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+  }
+  .node-red    .tnode-dot { background: var(--red);    box-shadow: 0 0 6px rgba(255,77,77,0.5); }
+  .node-gold   .tnode-dot { background: var(--gold);   box-shadow: 0 0 6px rgba(245,200,66,0.5); }
+  .node-orange .tnode-dot { background: var(--orange); box-shadow: 0 0 6px rgba(255,140,66,0.4); }
+  .node-green  .tnode-dot { background: var(--green);  box-shadow: 0 0 8px rgba(61,255,143,0.5); }
+  .tnode-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+    text-align: center;
+  }
+  .tnode-sub {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.3;
+    max-width: 72px;
+  }
+  .timeline-connector {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    margin-top: 5px;
+    min-width: 16px;
+    align-self: flex-start;
+    margin-top: 6px;
+  }
+
+  /* ── MINDSET CLOSER ── */
+  .contingency-mindset {
+    display: flex;
+    gap: 0;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .mindset-bar {
+    width: 4px;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+  .mindset-content {
+    padding: 18px 20px;
+    flex: 1;
+  }
+  .mindset-title {
+    font-family: var(--mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.13em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .contingency-mindset p {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.65;
+  }
+
+  @media (max-width: 480px) {
+    .contingency-stat-bar { grid-template-columns: 1fr; }
+    .timeline-node { min-width: 64px; }
+    .tnode-sub { max-width: 60px; font-size: 0.54rem; }
+  }
+</style>
+
 </body>
 </html>
