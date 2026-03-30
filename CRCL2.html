@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRCL Investment Dashboard</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2f;
+      --panel-2: #19233d;
+      --text: #e8eefc;
+      --muted: #9fb0d1;
+      --green: #2ecc71;
+      --red: #ff6b6b;
+      --blue: #5da9ff;
+      --amber: #f5b942;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: linear-gradient(180deg, #0b1020 0%, #0f1730 100%);
+      color: var(--text);
+      padding: 24px;
+    }
+    .container { max-width: 1450px; margin: 0 auto; display: grid; gap: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    h1 { margin: 0; font-size: 2rem; }
+    .subtitle { color: var(--muted); margin-top: 6px; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+    .card {
+      background: rgba(18, 26, 47, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+    .label { color: var(--muted); font-size: 0.92rem; margin-bottom: 8px; }
+    .value { font-size: 2rem; font-weight: 700; }
+    .value.small { font-size: 1.45rem; }
+    .positive { color: var(--green); }
+    .negative { color: var(--red); }
+    .neutral { color: var(--amber); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    th { color: var(--muted); font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    input[type="number"] {
+      width: 110px; background: var(--panel-2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; font-size: 0.95rem;
+    }
+    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
+    .pill.long { background: rgba(46, 204, 113, 0.15); color: #7ef0ab; }
+    .pill.short { background: rgba(255, 107, 107, 0.15); color: #ff9c9c; }
+    .pill.phase { background: rgba(93, 169, 255, 0.15); color: #9dcbff; }
+    .muted { color: var(--muted); }
+    .note { font-size: 0.9rem; color: var(--muted); line-height: 1.55; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+    button {
+      background: var(--blue); color: white; border: none; border-radius: 14px;
+      padding: 12px 16px; font-weight: 700; cursor: pointer;
+    }
+    button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .timeline { display: grid; gap: 14px; }
+    .timeline-item { border: 1px solid var(--border); border-radius: 18px; padding: 16px; background: rgba(255,255,255,0.02); }
+    .timeline-item h3 { margin: 0 0 8px 0; font-size: 1rem; }
+    .timeline-item ul { margin: 8px 0 0 18px; color: var(--muted); }
+    code { background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 8px; }
+    @media (max-width: 1100px) {
+      .span-3, .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: span 12; }
+      .value { font-size: 1.6rem; }
+      table { font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>CRCL Investment Dashboard</h1>
+        <div class="subtitle">Built around your actual trade story: synthetic long → hedge → restructure.</div>
+      </div>
+      <div class="note">Update only the <strong>Current Option Price</strong> fields to keep the total P/L live.</div>
+    </div>
+
+    <div class="grid">
+      <div class="card span-3">
+        <div class="label">Total P/L (Entire History)</div>
+        <div id="totalPL" class="value">$0.00</div>
+      </div>
+      <div class="card span-3">
+        <div class="label">Realized P/L (Closed / Historical)</div>
+        <div id="realizedPL" class="value small">$0.00</div>
+      </div>
+      <div class="card span-3">
+        <div class="label">Unrealized P/L (Current Open Book)</div>
+        <div id="unrealizedPL" class="value small">$0.00</div>
+      </div>
+      <div class="card span-3">
+        <div class="label">Current Open Market Value</div>
+        <div id="marketValue" class="value small">$0.00</div>
+      </div>
+
+      <div class="card span-5">
+        <div class="label">Trade Story Timeline</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <h3><span class="pill phase">Phase 1</span> 7 Aug 2025 — Synthetic Long</h3>
+            <div class="note">You opened the core directional CRCL position.</div>
+            <ul>
+              <li>Bought Jan 2027 160 Call</li>
+              <li>Sold Jan 2027 160 Put</li>
+            </ul>
+          </div>
+          <div class="timeline-item">
+            <h3><span class="pill phase">Phase 2</span> 19 Nov 2025 — Hedge Layer</h3>
+            <div class="note">You added protection / structure without closing the original thesis.</div>
+            <ul>
+              <li>Sold Jan 2027 170 Call</li>
+              <li>Bought Jan 2027 50 Put</li>
+            </ul>
+          </div>
+          <div class="timeline-item">
+            <h3><span class="pill phase">Phase 3</span> 26 Mar 2026 — Restructure</h3>
+            <div class="note">You closed the earlier synthetic/hedge legs, kept the bought put, and opened a new 3-leg structure.</div>
+            <ul>
+              <li>Closed 160 Call</li>
+              <li>Closed 160 Put</li>
+              <li>Closed 170 Call</li>
+              <li>Kept 50 Put</li>
+              <li>Opened: 130C short, 100P short, 100C long</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card span-7">
+        <div class="label">Current Open Positions Only</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Phase</th>
+              <th>Option</th>
+              <th>Side</th>
+              <th>Qty</th>
+              <th>Entry</th>
+              <th>Current Option Price</th>
+              <th>P/L</th>
+            </tr>
+          </thead>
+          <tbody id="openPositionsTable"></tbody>
+        </table>
+        <div class="actions">
+          <button onclick="saveInputs()">Save Current Prices</button>
+          <button class="secondary" onclick="resetInputs()">Reset to 0</button>
+        </div>
+      </div>
+
+      <div class="card span-7">
+        <div class="label">Historical Closed Legs (Realized P/L Story)</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Phase</th>
+              <th>Trade</th>
+              <th>Cash Flow</th>
+            </tr>
+          </thead>
+          <tbody id="closedTradesTable"></tbody>
+        </table>
+      </div>
+
+      <div class="card span-5">
+        <div class="label">How this dashboard now thinks about your book</div>
+        <div class="note">
+          <strong>Open positions now represent only what is still alive after your restructure.</strong><br><br>
+          That means the dashboard is no longer treating your older synthetic long legs as if they are still open. They are now correctly treated as part of the <strong>historical / realized trade path</strong>.<br><br>
+          So your total result is now:<br>
+          <strong>Total P/L = all historical cash flows + current value of only the active positions</strong><br><br>
+          If you ever want to update the story, edit only these two arrays in the code:<br>
+          <code>openPositions</code> and <code>closedTrades</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const contractSize = 100;
+
+    // ONLY positions that are still open after your Mar 2026 restructure
+    const openPositions = [
+      { phase: 'Phase 2', symbol: 'CRCL Jan 2027 50 P', side: 'long', qty: 1, entry: 10.18 },
+      { phase: 'Phase 3', symbol: 'CRCL Jan 2027 130 C', side: 'short', qty: 1, entry: 21.29 },
+      { phase: 'Phase 3', symbol: 'CRCL Jan 2027 100 P', side: 'short', qty: 1, entry: 27.12 },
+      { phase: 'Phase 3', symbol: 'CRCL Jan 2027 100 C', side: 'long', qty: 1, entry: 30.66 },
+    ];
+
+    // Historical cash flow trail, aligned to your story
+    const closedTrades = [
+      { date: '2025-08-07', phase: 'Phase 1', trade: 'Sold CRCL Jan 2027 160 P @ 49.05', cashFlow: 4905 },
+      { date: '2025-08-07', phase: 'Phase 1', trade: 'Bought CRCL Jan 2027 160 C @ 46.95', cashFlow: -4695 },
+      { date: '2025-11-19', phase: 'Phase 2', trade: 'Sold CRCL Jan 2027 170 C @ 8.36', cashFlow: 836 },
+      { date: '2025-11-19', phase: 'Phase 2', trade: 'Bought CRCL Jan 2027 50 P @ 10.18', cashFlow: -1018 },
+      { date: '2026-03-26', phase: 'Phase 3', trade: 'Bought to close CRCL Jan 2027 160 P @ 70.45', cashFlow: -7045 },
+      { date: '2026-03-26', phase: 'Phase 3', trade: 'Sold to close CRCL Jan 2027 160 C @ 14.96', cashFlow: 1496 },
+      { date: '2026-03-26', phase: 'Phase 3', trade: 'Bought to close CRCL Jan 2027 170 C @ 13.57', cashFlow: -1357 },
+      { date: '2026-03-26', phase: 'Phase 3', trade: 'Sold to open CRCL Jan 2027 130 C @ 21.29', cashFlow: 2129 },
+      { date: '2026-03-26', phase: 'Phase 3', trade: 'Sold to open CRCL Jan 2027 100 P @ 27.12', cashFlow: 2712 },
+      { date: '2026-03-26', phase: 'Phase 3', trade: 'Bought to open CRCL Jan 2027 100 C @ 30.66', cashFlow: -3066 },
+    ];
+
+    function formatUSD(n) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+    }
+
+    function getStoredPrice(symbol) {
+      return Number(localStorage.getItem(`crcl_${symbol}`)) || 0;
+    }
+
+    function saveInputs() {
+      document.querySelectorAll('[data-symbol]').forEach(input => {
+        localStorage.setItem(`crcl_${input.dataset.symbol}`, input.value || 0);
+      });
+      calculate();
+      alert('Current option prices saved.');
+    }
+
+    function resetInputs() {
+      document.querySelectorAll('[data-symbol]').forEach(input => {
+        input.value = 0;
+        localStorage.setItem(`crcl_${input.dataset.symbol}`, 0);
+      });
+      calculate();
+    }
+
+    function renderOpenPositions() {
+      const tbody = document.getElementById('openPositionsTable');
+      tbody.innerHTML = '';
+      openPositions.forEach(pos => {
+        const current = getStoredPrice(pos.symbol);
+        const pnl = pos.side === 'long'
+          ? (current - pos.entry) * contractSize * pos.qty
+          : (pos.entry - current) * contractSize * pos.qty;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><span class="pill phase">${pos.phase}</span></td>
+          <td><strong>${pos.symbol}</strong></td>
+          <td><span class="pill ${pos.side}">${pos.side.toUpperCase()}</span></td>
+          <td>${pos.qty}</td>
+          <td>${formatUSD(pos.entry * contractSize)}</td>
+          <td><input type="number" step="0.01" min="0" value="${current}" data-symbol="${pos.symbol}" oninput="calculate()"></td>
+          <td class="${pnl >= 0 ? 'positive' : 'negative'}"><strong>${formatUSD(pnl)}</strong></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderClosedTrades() {
+      const tbody = document.getElementById('closedTradesTable');
+      tbody.innerHTML = '';
+      closedTrades.forEach(trade => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${trade.date}</td>
+          <td><span class="pill phase">${trade.phase}</span></td>
+          <td>${trade.trade}</td>
+          <td class="${trade.cashFlow >= 0 ? 'positive' : 'negative'}"><strong>${formatUSD(trade.cashFlow)}</strong></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function calculate() {
+      let unrealized = 0;
+      let marketValue = 0;
+
+      document.querySelectorAll('[data-symbol]').forEach(input => {
+        const pos = openPositions.find(p => p.symbol === input.dataset.symbol);
+        const current = Number(input.value) || 0;
+        localStorage.setItem(`crcl_${pos.symbol}`, current);
+
+        const currentValue = (pos.side === 'long' ? 1 : -1) * current * contractSize * pos.qty;
+        const pnl = pos.side === 'long'
+          ? (current - pos.entry) * contractSize * pos.qty
+          : (pos.entry - current) * contractSize * pos.qty;
+
+        unrealized += pnl;
+        marketValue += currentValue;
+      });
+
+      const realized = closedTrades.reduce((sum, t) => sum + t.cashFlow, 0);
+      const total = realized + unrealized;
+
+      const totalEl = document.getElementById('totalPL');
+      const realizedEl = document.getElementById('realizedPL');
+      const unrealizedEl = document.getElementById('unrealizedPL');
+      const marketValueEl = document.getElementById('marketValue');
+
+      totalEl.textContent = formatUSD(total);
+      realizedEl.textContent = formatUSD(realized);
+      unrealizedEl.textContent = formatUSD(unrealized);
+      marketValueEl.textContent = formatUSD(marketValue);
+
+      totalEl.className = `value ${total >= 0 ? 'positive' : 'negative'}`;
+      realizedEl.className = `value small ${realized >= 0 ? 'positive' : 'negative'}`;
+      unrealizedEl.className = `value small ${unrealized >= 0 ? 'positive' : 'negative'}`;
+      marketValueEl.className = `value small ${marketValue >= 0 ? 'positive' : 'negative'}`;
+
+      renderOpenPositions();
+    }
+
+    renderClosedTrades();
+    renderOpenPositions();
+    calculate();
+  </script>
+</body>
+</html>
