@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesla Robotaxi Network Builder | Professional Analyst Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --tesla-red: #E31937; --dark-bg: #0a0a0a; --panel-bg: #141414; }
+        body { background-color: var(--dark-bg); color: #e5e7eb; font-family: 'Inter', sans-serif; }
+       .input-card { background: var(--panel-bg); border: 1px solid #262626; border-radius: 12px; transition: border-color 0.2s; }
+       .input-card:hover { border-color: var(--tesla-red); }
+       .kpi-value { color: #fff; font-weight: 700; font-size: 1.875rem; line-height: 2.25rem; }
+        input[type="range"] { accent-color: var(--tesla-red); }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-6">
+            <div>
+                <h1 class="text-4xl font-black tracking-tighter text-white uppercase italic">Tesla Robotaxi <span class="text-red-600">Network</span></h1>
+                <p class="text-gray-400 mt-1 font-medium">Fleet Scaling & Market Valuation Projection Model</p>
+            </div>
+            <div class="mt-4 md:mt-0 text-right">
+                <span class="bg-red-900/30 text-red-500 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-red-500/20">Active Simulation</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 space-y-4">
+                <div class="input-card p-6">
+                    <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Operational Inputs</h2>
+                    
+                    <div class="space-y-6">
+                        <div class="group">
+                            <label class="flex justify-between text-sm mb-2">
+                                <span>Avg Speed of Travel</span>
+                                <span class="text-red-500 font-mono" id="val-speed">25 MPH</span>
+                            </label>
+                            <input type="range" id="speed" min="15" max="45" value="25" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+
+                        <div class="group">
+                            <label class="flex justify-between text-sm mb-2">
+                                <span>Average Trip Length</span>
+                                <span class="text-red-500 font-mono" id="val-length">5 Miles</span>
+                            </label>
+                            <input type="range" id="length" min="2" max="20" value="5" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+
+                        <div class="group">
+                            <label class="flex justify-between text-sm mb-2">
+                                <span>Empty Miles %</span>
+                                <span class="text-red-500 font-mono" id="val-empty">40%</span>
+                            </label>
+                            <input type="range" id="empty" min="10" max="60" value="40" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+
+                        <div class="group">
+                            <label class="flex justify-between text-sm mb-2">
+                                <span>Loading/Unloading Time</span>
+                                <span class="text-red-500 font-mono" id="val-loading">3 Mins</span>
+                            </label>
+                            <input type="range" id="loading" min="1" max="10" value="3" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-card p-6">
+                    <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Financial Inputs</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">Base Fare</span>
+                            <input type="number" id="base-fare" value="3.00" step="0.50" class="bg-black border border-gray-800 rounded px-2 py-1 w-20 text-right text-red-500">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">Fare per Mile</span>
+                            <input type="number" id="fare-mile" value="1.40" step="0.10" class="bg-black border border-gray-800 rounded px-2 py-1 w-20 text-right text-red-500">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm">Charging Cost ($/kWh)</span>
+                            <input type="number" id="charge-cost" value="0.35" step="0.05" class="bg-black border border-gray-800 rounded px-2 py-1 w-20 text-right text-red-500">
+                        </div>
+                        <div class="flex justify-between items-center pt-4 border-t border-gray-800">
+                            <span class="text-sm font-bold">% Profit Reinvested</span>
+                            <input type="number" id="reinvest" value="33" class="bg-black border border-gray-800 rounded px-2 py-1 w-20 text-right text-red-500">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold">Network Growth (Base)</span>
+                            <input type="number" id="growth-base" value="20" class="bg-black border border-gray-800 rounded px-2 py-1 w-20 text-right text-red-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="input-card p-6 border-l-4 border-l-red-600">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Annual Revenue / Car</p>
+                        <div class="kpi-value" id="rev-per-car">$0</div>
+                        <p class="text-[10px] text-gray-500 mt-2">Gross booking volume per unit</p>
+                    </div>
+                    <div class="input-card p-6">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tesla 35% Take Rate</p>
+                        <div class="kpi-value text-green-500" id="tesla-share">$0</div>
+                        <p class="text-[10px] text-gray-500 mt-2">Platform service fee revenue</p>
+                    </div>
+                    <div class="input-card p-6">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Network Cap (2032)</p>
+                        <div class="kpi-value text-blue-500" id="market-cap">$0</div>
+                        <div class="flex items-center gap-2 mt-2">
+                             <span class="text-[10px] text-gray-500">PE Ratio:</span>
+                             <input type="number" id="pe-ratio" value="30" class="bg-transparent border-none text-[10px] text-red-500 w-8 p-0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-card p-8 h-[500px]">
+                    <div class="flex justify-between items-center mb-8">
+                        <h3 class="font-bold text-white uppercase tracking-widest text-sm italic">Growth Projection: 2027-2035</h3>
+                        <div class="flex gap-4 text-[10px] uppercase font-bold tracking-widest">
+                            <span class="flex items-center gap-2 text-red-500"><div class="w-2 h-2 bg-red-600 rounded-full"></div> Total Network Value</span>
+                            <span class="flex items-center gap-2 text-gray-400"><div class="w-2 h-2 bg-gray-600 rounded-full"></div> Fleet Size</span>
+                        </div>
+                    </div>
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        let chart;
+
+        const updateModel = () => {
+            // Inputs
+            const speed = parseFloat(document.getElementById('speed').value);
+            const length = parseFloat(document.getElementById('length').value);
+            const emptyMilesPercent = parseFloat(document.getElementById('empty').value) / 100;
+            const loadingTime = parseFloat(document.getElementById('loading').value);
+            const baseFare = parseFloat(document.getElementById('base-fare').value);
+            const farePerMile = parseFloat(document.getElementById('fare-mile').value);
+            const chargeCost = parseFloat(document.getElementById('charge-cost').value);
+            const reinvestRate = parseFloat(document.getElementById('reinvest').value) / 100;
+            const growthRatePct = parseFloat(document.getElementById('growth-base').value) / 100;
+            const peRatio = parseFloat(document.getElementById('pe-ratio').value);
+            const baseCars = 500;
+
+            // Update Labels
+            document.getElementById('val-speed').innerText = speed + " MPH";
+            document.getElementById('val-length').innerText = length + " Miles";
+            document.getElementById('val-empty').innerText = (emptyMilesPercent * 100) + "%";
+            document.getElementById('val-loading').innerText = loadingTime + " Mins";
+
+            // Logic
+            const efficiency = 5.5; // mi/kWh
+            const tripDriveTime = (length / speed) * 60; // minutes
+            const totalTripTime = tripDriveTime + loadingTime;
+            
+            // Assume 30% utilization of a 24-hour day (8.64 hours active)
+            const activeMinutes = 24 * 60 * 0.30; 
+            const tripsPerDay = activeMinutes / totalTripTime;
+            const dailyRevenue = tripsPerDay * (baseFare + (farePerMile * length));
+            const annualRevenuePerCar = dailyRevenue * 365;
+            
+            // Costs
+            const totalMilesPerYear = (tripsPerDay * length * 365) / (1 - emptyMilesPercent);
+            const energyCostPerYear = (totalMilesPerYear / efficiency) * chargeCost;
+            const maintenanceInsurance = 12000; // Fixed commercial estimate
+            const fsdSub = 199 * 12;
+            const totalOpEx = energyCostPerYear + maintenanceInsurance + fsdSub;
+            
+            const annualProfitPerCar = annualRevenuePerCar - totalOpEx;
+            const teslaShare = annualRevenuePerCar * 0.35;
+
+            // UI Update
+            document.getElementById('rev-per-car').innerText = "$" + Math.round(annualRevenuePerCar).toLocaleString();
+            document.getElementById('tesla-share').innerText = "$" + Math.round(teslaShare).toLocaleString();
+
+            // Projection Math (2027 onwards)
+            const years = ;
+            let currentFleet = baseCars;
+            const fleetData =;
+            const valueData =;
+
+            years.forEach(year => {
+                const annualNetNetworkProfit = currentFleet * teslaShare;
+                const networkValue = annualNetNetworkProfit * peRatio;
+                
+                fleetData.push(Math.round(currentFleet));
+                valueData.push(networkValue / 1000000); // In Millions
+
+                // Reinvestment growth + Organic growth rate
+                const carsBoughtFromProfit = (annualNetNetworkProfit * reinvestRate) / 30000;
+                currentFleet = (currentFleet * (1 + growthRatePct)) + carsBoughtFromProfit;
+            });
+
+            document.getElementById('market-cap').innerText = "$" + (valueData / 1000).toFixed(1) + "B";
+
+            renderChart(years, fleetData, valueData);
+        };
+
+        const renderChart = (labels, fleet, value) => {
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets:,
+                        yAxisID: 'yFleet',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        yValue: { 
+                            type: 'linear', position: 'left',
+                            grid: { color: '#1f2937' },
+                            ticks: { color: '#9ca3af', callback: v => '$' + v + 'M' }
+                        },
+                        yFleet: { 
+                            type: 'linear', position: 'right',
+                            grid: { display: false },
+                            ticks: { color: '#4b5563' }
+                        },
+                        x: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        };
+
+        document.querySelectorAll('input').forEach(input => input.addEventListener('input', updateModel));
+        window.onload = updateModel;
+    </script>
+</body>
+</html>
