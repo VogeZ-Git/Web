@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Portfolio Technical Analysis</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-bullish: #22c55e;
+            --accent-neutral: #f59e0b;
+            --accent-target: #3b82f6;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: var(--text-primary);
+        }
+
+        header p {
+            color: var(--text-secondary);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .asset-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .asset-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-target);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .asset-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .status-bullish { background: #14532d; color: #4ade80; }
+        .status-neutral { background: #78350f; color: #fbbf24; }
+
+        .stat-line {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+
+        .stat-label { color: var(--text-secondary); }
+        .stat-value { font-weight: 500; }
+
+        .analysis-box {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .price-target {
+            color: var(--accent-target);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Portfolio Deep Dive</h1>
+    <p>Technical Analysis & Market Expectations Dashboard</p>
+</header>
+
+<div class="dashboard-grid">
+    <div class="asset-card">
+        <div class="card-header">
+            <span class="asset-name">Bitcoin (BTC)</span>
+            <span class="status-badge status-bullish">Consolidating</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Key Support:</span>
+            <span class="stat-value">$60,000 - $62,000</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Next Target:</span>
+            <span class="stat-value price-target">$100,000+</span>
+        </div>
+        <div class="analysis-box">
+            Range-bound between $60k and $72k. Expecting a massive breakout toward the end of the year once consolidation completes.
+        </div>
+    </div>
+
+    <div class="asset-card">
+        <div class="card-header">
+            <span class="asset-name">Ethereum (ETH)</span>
+            <span class="status-badge status-neutral">Waiting for ETF</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Current Range:</span>
+            <span class="stat-value">$3,000 - $3,500</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Cycle Expectation:</span>
+            <span class="stat-value price-target">$4,500 - $8,000</span>
+        </div>
+        <div class="analysis-box">
+            Lagging Bitcoin slightly. The main driver will be the spot ETF approval and the transition to a deflationary supply.
+        </div>
+    </div>
+
+    <div class="asset-card">
+        <div class="card-header">
+            <span class="asset-name">Solana (SOL)</span>
+            <span class="status-badge status-bullish">Strong Trend</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Buy Zone:</span>
+            <span class="stat-value">$120 - $140</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Peak Prediction:</span>
+            <span class="stat-value price-target">$500+</span>
+        </div>
+        <div class="analysis-box">
+            The "retail favorite." Showing massive relative strength against the market. Targets remain aggressive for this cycle.
+        </div>
+    </div>
+
+    <div class="asset-card">
+        <div class="card-header">
+            <span class="asset-name">Near Protocol (NEAR)</span>
+            <span class="status-badge status-bullish">AI Narrative</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Short Term:</span>
+            <span class="stat-value">$10 - $15</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Cycle Peak:</span>
+            <span class="stat-value price-target">$50.00</span>
+        </div>
+        <div class="analysis-box">
+            Key player in AI and chain abstraction. One of the top convictions for a multi-X return this cycle.
+        </div>
+    </div>
+
+    <div class="asset-card">
+        <div class="card-header">
+            <span class="asset-name">Arweave (AR)</span>
+            <span class="status-badge status-bullish">Breakout</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Support:</span>
+            <span class="stat-value">$25.00</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Target:</span>
+            <span class="stat-value price-target">$100.00</span>
+        </div>
+        <div class="analysis-box">
+            AO narrative is a game changer for storage. TA shows a clean breakout above previous resistance levels.
+        </div>
+    </div>
+
+    <div class="asset-card">
+        <div class="card-header">
+            <span class="asset-name">Stacks (STX)</span>
+            <span class="status-badge status-bullish">BTC Beta</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Target:</span>
+            <span class="stat-value price-target">$5.00 - $8.00</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Catalyst:</span>
+            <span class="stat-value">Nakamoto Upgrade</span>
+        </div>
+        <div class="analysis-box">
+            The leading Bitcoin Layer 2. Expecting it to outperform BTC on percentage terms during the next leg up.
+        </div>
+    </div>
+
+    <div class="asset-card">
+        <div class="card-header">
+            <span class="asset-name">Render (RNDR)</span>
+            <span class="status-badge status-bullish">GPU Play</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Accumulation:</span>
+            <span class="stat-value">$7.00 - $10.00</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Cycle Target:</span>
+            <span class="stat-value price-target">$40.00</span>
+        </div>
+        <div class="analysis-box">
+            The "Nvidia of Crypto." Technicals show a strong base forming for the next AI-driven vertical move.
+        </div>
+    </div>
+
+    <div class="asset-card">
+        <div class="card-header">
+            <span class="asset-name">MicroStrategy (MSTR)</span>
+            <span class="status-badge status-bullish">Proxy Play</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Correlation:</span>
+            <span class="stat-value">High (BTC Beta)</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">Outlook:</span>
+            <span class="stat-value">Aggressive Growth</span>
+        </div>
+        <div class="analysis-box">
+            Acting as a leveraged proxy for Bitcoin. If BTC hits $100k, MSTR is expected to see significant premium expansion.
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
