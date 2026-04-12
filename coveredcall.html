@@ -1487,8 +1487,36 @@
     </div>
   </div>
 
-</div><!-- end contingency-section -->
 
+  </div><!-- end contingency-section -->
+
+ <!-- NEW BLOCK: Position Management Examples (from PDF v2 pages 13–17) -->
+    <div class="manual-block">
+      <div class="manual-block-title">4 Ways to Close or Manage a Position</div>
+      <div class="manual-row">
+        <span class="manual-key manual-key--green">Example A — Hold to Expiration</span>
+        <span class="manual-val">No adjustment. If OTM at expiry → keep shares + start new 10Δ next week. If ITM → assigned (shares sold at strike + keep all premium). Assignments occur after market close.</span>
+      </div>
+      <div class="manual-row">
+        <span class="manual-key">Example B — Close Early & Keep Shares</span>
+        <span class="manual-val">Buy-to-Close (BTC) the short call. If the contract appreciated → small loss; if depreciated → net profit. You keep your 100 shares.</span>
+      </div>
+      <div class="manual-row">
+        <span class="manual-key">Example C — Close Early & Sell Shares</span>
+        <span class="manual-val">BTC the short call + sell shares (can be done as one transaction). You receive the net cash difference.</span>
+      </div>
+      <div class="manual-row">
+        <span class="manual-key manual-key--gold">Example D — Roll Short Calls (Preferred)</span>
+        <span class="manual-val">In one transaction: BTC current call + STO new 40 DTE 10Δ call. You keep shares and ideally receive a credit. Roll weekly for average IV capture.</span>
+      </div>
+
+      <div style="margin-top:20px;padding:14px;background:rgba(245,200,66,0.08);border:1px solid var(--border);border-radius:4px;">
+        <strong>What if the stock runs?</strong><br>
+        You probably won’t roll straight back to a new 10Δ. Instead, roll up/out to the <strong>highest strike that still gives a credit (or net zero)</strong>. Match deltas closely. You will almost always receive a credit if you roll weekly at 40 DTE. Each roll pushes the “goal posts” further out. Once the stock levels off or declines, roll deltas back down (30Δ → 20Δ → 10Δ). Rolling 40 DTE weekly keeps your delta low and reduces surge risk.
+      </div>
+    </div>
+  </div>
+  
 <style>
   /* ── CONTINGENCY SECTION ────────────────────────────── */
   .contingency-section {
