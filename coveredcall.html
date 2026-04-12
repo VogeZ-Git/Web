@@ -564,6 +564,68 @@
       <div class="manual-rule"><span class="rule-num">5</span><span>Do not sell weeklies. The gamma risk when the stock spikes makes rolling nearly impossible without losing shares.</span></div>
     </div>
 
+    <!-- NEW BLOCK 5: Key Terminology (from Fireside Chat) -->
+    <div class="manual-block">
+      <div class="manual-block-title">Key Options Terminology</div>
+      <div class="manual-row">
+        <span class="manual-key">Intrinsic Value</span>
+        <span class="manual-val">Real profit if exercised now. Call = stock price – strike. Example: Stock $55, strike $50 = $5 intrinsic.</span>
+      </div>
+      <div class="manual-row">
+        <span class="manual-key">Extrinsic Value</span>
+        <span class="manual-val">Time value + volatility premium. This is what decays (theta). Key insight: extrinsic value decays as expiration approaches.</span>
+      </div>
+    </div>
+
+    <!-- NEW BLOCK 6: Buyer's vs Seller's Perspective -->
+    <div class="manual-block">
+      <div class="manual-block-title">Call Options – Two Sides of the Trade</div>
+      <div class="manual-row">
+        <span class="manual-key manual-key--new">Buyer (Long Call)</span>
+        <span class="manual-val">Right (not obligation) to buy 100 shares at strike. Pays premium. Max risk = premium paid. Needs big move up.</span>
+      </div>
+      <div class="manual-row">
+        <span class="manual-key">Seller (Short Call / Covered Call)</span>
+        <span class="manual-val">Collects premium upfront. Profits if stock stays flat or drops. You are the income generator.</span>
+      </div>
+      <div class="highlight-box">
+        <strong>Zero-Sum Reminder:</strong> Before every trade ask: “Why would someone take the opposite side?”
+      </div>
+    </div>
+
+    <!-- NEW BLOCK 7: Mean Reversion & IADSS (from Fireside Chat) -->
+    <div class="manual-block">
+      <div class="manual-block-title">Mean Reversion – Our North Star</div>
+      <p class="manual-val">Standard Deviation (SD) measures volatility. +2 or –2 SD signals = price is overextended → high probability of mean reversion.</p>
+      <p class="manual-val" style="margin-top:12px;">Use this concept with your 10Δ rolls: when delta spikes hard, the stock is likely overextended. Prepare to roll or close.</p>
+    </div>
+
+    <!-- NEW BLOCK 8: Risk Management – How to Avoid Losing Shares (from Transcript) -->
+    <div class="manual-block">
+      <div class="manual-block-title">Risk Management: Avoid Being Called Away</div>
+      <div class="highlight-box">
+        <strong>Practical TA Rules (apply to MSTR):</strong><br>
+        • Mark prior swing highs after every pullback.<br>
+        • If price breaks and closes above that high → strong continuation signal.<br>
+        • Close the short call (BTC) immediately — even at a small loss.<br>
+        • Do NOT let it run or roll in “rolling prison” during parabolic moves.<br>
+        • 50% profit rule is also excellent: take it and re-open at 40 DTE 10Δ.
+      </div>
+      <p class="manual-val">Example: You sold a 10Δ call for $15 premium. If the call price climbs back to $25 on a breakout → close it. A $10 loss is acceptable because you can immediately sell the next 10Δ and recover faster than holding to a $60–$120 loss.</p>
+    </div>
+
+    <!-- NEW BLOCK 9: Alternative Strategies (PMCC & Deep OOM) -->
+    <div class="manual-block">
+      <div class="manual-block-title">Alternative Strategies</div>
+      <div class="manual-row">
+        <span class="manual-key manual-key--gold">Poor Man’s Covered Call (PMCC)</span>
+        <span class="manual-val">Buy deep ITM LEAP (2+ years, ATM). Sell monthly 10% OTM calls against it. Lower capital, similar income. Works great on MSTR/IBIT.</span>
+      </div>
+      <div class="manual-row">
+        <span class="manual-key">Deep OOM Covered Calls</span>
+        <span class="manual-val">For long-term holders who don’t mind assignment. Sell 10–20% OTM calls (VIX &lt;20–25, sideways market). Roll up &amp; out on surges. Generates income + keeps most upside.</span>
+      </div>
+    </div>
   </div>
 </div>
 
