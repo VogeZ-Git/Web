@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesla Autonomy Roadmap: 100 Steps to World Domination</title>
+    <style>
+        :root {
+            --tesla-red: #e81922;
+            --dark-bg: #111;
+            --card-bg: #1c1c1c;
+            --text-main: #fff;
+            --text-dim: #aaa;
+            --achieved: #2ecc71;
+            --pending: #f1c40f;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(180deg, #1a1a1a 0%, #111 100%);
+            border-bottom: 1px solid #333;
+        }
+        h1 { margin: 0; font-size: 2.5rem; letter-spacing: -1px; }
+       .progress-container {
+            max-width: 800px;
+            margin: 30px auto;
+            background: #333;
+            border-radius: 20px;
+            height: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+       .progress-bar {
+            height: 100%;
+            background: var(--tesla-red);
+            width: 45%; /* Based on 45 milestones achieved as of April 2026 */
+            transition: width 1s ease-in-out;
+        }
+       .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 0;
+            font-weight: bold;
+            line-height: 30px;
+            font-size: 0.9rem;
+        }
+       .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+       .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 0.85rem;
+        }
+        th {
+            background: #252525;
+            text-align: left;
+            padding: 15px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #333;
+        }
+        tr:hover { background: #222; }
+       .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+       .status-achieved { background: #1b5e20; color: #4caf50; }
+       .status-expected { background: #7f6000; color: #ffeb3b; }
+       .citation { color: var(--tesla-red); text-decoration: none; font-size: 0.75rem; vertical-align: super; margin-left: 2px; }
+       .epoch-header {
+            background: #2c2c2c;
+            color: var(--tesla-red);
+            font-weight: bold;
+            padding: 10px 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Tesla Autonomy Roadmap</h1>
+    <div class="progress-container">
+        <div class="progress-bar"></div>
+        <div class="progress-text">45% OF GLOBAL FLEET MILESTONES ACHIEVED</div>
+    </div>
+    <div class="stats">
+        <div><span>Achieved:</span> 45</div>
+        <div><span>Remaining:</span> 55</div>
+        <div><span>Current Date:</span> April 16, 2026</div>
+    </div>
+</header>
+
+<div class="container">
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 50px;">Step</th>
+                <th>Milestone Description</th>
+                <th>Category</th>
+                <th>Date (Achieved/Expected)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="roadmap-body">
+            <tr class="epoch-header"><td colspan="5">Epoch I: Silicon Genesis (2012–2019)</td></tr>
+            <tr><td>1</td><td>First Model S with OTA capability launched</td><td>Infra</td><td>June 22, 2012 [1, 2]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>2</td><td>Supercharger support via OTA implemented</td><td>Infra</td><td>Sept 2012 [1]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>3</td><td>Hardware 1 (HW1) with Mobileye EyeQ3 chip</td><td>Hardware</td><td>Sept 17, 2014 [3, 2]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>4</td><td>First highway Autopilot features (v7.0)</td><td>Software</td><td>Oct 2015 [3]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>5</td><td>Vertical Integration: End of Mobileye partnership</td><td>Strategy</td><td>July 2016 [3]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>6</td><td>Hardware 2.0 (HW2) 8-camera 360-vision launch</td><td>Hardware</td><td>Oct 1, 2016 [3, 2]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>7</td><td>"Master Plan Part Deux" (Tesla Network)</td><td>Strategy</td><td>July 20, 2016 [4, 5]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>8</td><td>Hardware 2.5 (HW2.5) with redundancy nodes</td><td>Hardware</td><td>Aug 1, 2017 [3, 2]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>9</td><td>"Navigate on Autopilot" launch (Highway)</td><td>Software</td><td>Oct 2018 [3]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>10</td><td>Hardware 3 (FSD Computer) with dual custom chips</td><td>Hardware</td><td>April 12, 2019 [2, 6]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>11</td><td>Tesla Autonomy Day: Robotaxi unveiling</td><td>Strategy</td><td>April 22, 2019 [4, 7]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>12</td><td>DeepScale Acquisition for AI efficiency</td><td>Strategy</td><td>Oct 2019</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>13</td><td>Autopilot Milestone: 1 Billion Miles logged</td><td>Data</td><td>Nov 2018 [3]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>14</td><td>Internal testing of City Streets FSD logic</td><td>Software</td><td>Late 2019 [3]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>15</td><td>V10 UI Visualization overhaul</td><td>Software</td><td>2019 [1]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+
+            <tr class="epoch-header"><td colspan="5">Epoch II: Data Engine & The Vision Pivot (2020–2024)</td></tr>
+            <tr><td>16</td><td>Launch of public FSD Beta (Early Access)</td><td>Software</td><td>Oct 2020 [3]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>17</td><td>Removal of Radar (Transition to Tesla Vision)</td><td>Hardware</td><td>May 2021 [3, 6]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>18</td><td>FSD Beta wide release (160k NA owners)</td><td>Software</td><td>Sept 2022 [3]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>19</td><td>Removal of Ultrasonic Sensors (USS)</td><td>Hardware</td><td>Oct 2022 [3, 6]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>20</td><td>Hardware 4 (AI4) production start</td><td>Hardware</td><td>Jan 2023 [2, 6]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>21</td><td>FSD expansion to Canadian market</td><td>Market</td><td>March 2023 [3]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>22</td><td>"Actually Smart Summon" (ASS) launch</td><td>Software</td><td>Sept 2024 [8, 9]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>23</td><td>1 Billion Cumulative FSD Miles Achieved</td><td>Data</td><td>April 2024 [10]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>24</td><td>FSD v12 (End-to-End Neural Networks)</td><td>Software</td><td>March 2024 [11, 12]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>25</td><td>Activation of HW4-native models (v12.5.6)</td><td>Software</td><td>Oct 2024 [3]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>26</td><td>"We, Robot" Event: Cybercab Concept reveal</td><td>Hardware</td><td>Oct 10, 2024 [4, 7]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>27</td><td>Eye-Tracking Driver Monitoring (Sunglasses mode)</td><td>Safety</td><td>Sept 2024 [9, 13]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>28</td><td>Unified Highway/City Single Stack deployment</td><td>Software</td><td>2023 [3, 12]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>29</td><td>FSD Supervised $99/mo subscription launch</td><td>Economics</td><td>2024 [14, 15]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>30</td><td>7 Billion Cumulative FSD Miles Achieved</td><td>Data</td><td>Dec 27, 2025 [16]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+
+            <tr class="epoch-header"><td colspan="5">Epoch III: The Operational Pivot (2025–April 2026)</td></tr>
+            <tr><td>31</td><td>Paid Robotaxi service launch in Austin (Monitors)</td><td>Operational</td><td>June 22, 2025 </td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>32</td><td>Robotaxi App for iOS released</td><td>Infra</td><td>2025 [17, 18]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>33</td><td>200 Active Robotaxis deployed (Bay Area/Austin)</td><td>Operational</td><td>Jan 20, 2026 </td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>34</td><td>First Unsupervised (Monitor-Out) ride in Austin</td><td>Operational</td><td>Jan 2026 </td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>35</td><td>Dutch RDW Approval for Supervised FSD in Europe</td><td>Regulatory</td><td>April 10, 2026 </td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>36</td><td>8 Billion Cumulative FSD Miles Achieved</td><td>Data</td><td>Feb 18, 2026 [16, 19, 18]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>37</td><td>FSD v14: Transition to Human-Surpassing logic</td><td>Software</td><td>Oct 2025 [15, 20, 21]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>38</td><td>Safety Score 3.0: FSD Use = 100 Perfect Score</td><td>Insurance</td><td>April 15, 2026 [11, 22, 23]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>39</td><td>FSD v14.3: 20% faster reaction time deployment</td><td>Software</td><td>April 8, 2026 [24, 25]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>40</td><td>AI5 Chip (Hardware 5) design Tape-Out</td><td>Hardware</td><td>April 15, 2026 [26, 27, 16, 28]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>41</td><td>Announcement of "FSD v14 Lite" for HW3 owners</td><td>Strategy</td><td>Oct 2025 </td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>42</td><td>Supercharger for Business ROI Calculator launch</td><td>Economics</td><td>April 9, 2026 [29, 3]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>43</td><td>Rider Profile Cloud Sync (Music/Seats)</td><td>Operational</td><td>2025 </td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>44</td><td>400 Active Robotaxis deployed (Fleet Scale)</td><td>Operational</td><td>March 10, 2026 [30, 31]</td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+            <tr><td>45</td><td>Cybercab volume production start (Giga Texas)</td><td>Hardware</td><td>April 2026 </td><td><span class="status-badge status-achieved">Achieved</span></td></tr>
+
+            <tr class="epoch-header"><td colspan="5">Epoch IV: Mass Scaling (2026–2028)</td></tr>
+            <tr><td>46</td><td>"FSD v14 Lite" wide release for HW3 owners</td><td>Software</td><td>June 2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>47</td><td>Robotaxi Expansion: Dallas, TX</td><td>Operational</td><td>May 2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>48</td><td>Robotaxi Expansion: Houston, TX</td><td>Operational</td><td>June 2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>49</td><td>Robotaxi Expansion: Phoenix, AZ</td><td>Operational</td><td>May 2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>50</td><td>Robotaxi Expansion: Miami, Orlando, Tampa, FL</td><td>Operational</td><td>H1 2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>51</td><td>Robotaxi Expansion: Las Vegas, NV</td><td>Operational</td><td>H1 2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>52</td><td>EU-wide recognition of Dutch (RDW) FSD approval</td><td>Regulatory</td><td>Summer 2026 [14, 32, 22]</td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>53</td><td>FSD v15 Large Model (10x parameters) rollout</td><td>Software</td><td>Late 2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>54</td><td>10 Billion Miles cumulative training data threshold</td><td>Data</td><td>Late 2026 [16, 19]</td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>55</td><td>Removal of monitors in Bay Area fleet (Unsupervised)</td><td>Operational</td><td>Late 2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>56</td><td>CA Regulatory Approval for full driverless service</td><td>Regulatory</td><td>Late 2026 [32, 33, 34]</td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>57</td><td>Optimus internal logistics deployment at Giga Texas</td><td>Strategy</td><td>Late 2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>58</td><td>Nationwide US release of Unsupervised FSD</td><td>Market</td><td>End 2026 [15, 32, 35, 21]</td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>59</td><td>Launch of "Managed Fleet" portal for private owners</td><td>Economics</td><td>2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr><td>60</td><td>Robotaxi availability in 20+ major US metros</td><td>Operational</td><td>End 2026 </td><td><span class="status-badge status-expected">Expected</span></td></tr>
+
+            <tr class="epoch-header"><td colspan="5">Epoch V: AI5 Dominance (2027–2029)</td></tr>
+            <tr><td>61-75</td><td>AI5 Mass Production, Cybercab Consumer Sales, International Expansion (UK/China), Inductive Charging scaling</td><td>Misc</td><td>2027-2028</td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr class="epoch-header"><td colspan="5">Epoch VI: Economic Pivot (2029–2030)</td></tr>
+            <tr><td>76-90</td><td>Robotaxi Revenue > Auto Sales, $0.20/mile target, First city bans human driving, Cybervan launch</td><td>Misc</td><td>2029-2030</td><td><span class="status-badge status-expected">Expected</span></td></tr>
+            <tr class="epoch-header"><td colspan="5">Epoch VII: Global Transport Utility (2031+)</td></tr>
+            <tr><td>91-100</td><td>Universal Level 5, Tesla Air eVTOL Integration, Six-Nines Reliability (99.9999%), Global Autonomy mission complete</td><td>Misc</td><td>2031-2035</td><td><span class="status-badge status-expected">Expected</span></td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Logic to highlight current progress based on the current date (April 16, 2026)
+    // The bar is currently set at 45% because step 45 was achieved in April 2026.
+</script>
+
+</body>
+</html>
