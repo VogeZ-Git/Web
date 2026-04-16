@@ -3,42 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Strategic DCA Planner</title>
+    <title>Dynamic DCA Portfolio Planner</title>
     <style>
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f0f2f5; color: #1a1a1a; padding: 20px; line-height: 1.5; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        h1 { color: #111; text-align: center; font-weight: 800; letter-spacing: -1px; }
-        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h1 { color: #111; text-align: center; font-weight: 800; letter-spacing: -1px; margin-bottom: 5px; }
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
         .control-group { display: flex; flex-direction: column; }
-        label { font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: #64748b; text-transform: uppercase; }
-        input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
+        label { font-weight: 600; margin-bottom: 8px; font-size: 0.7rem; color: #64748b; text-transform: uppercase; }
+        input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { text-align: left; padding: 12px; background: #f1f5f9; color: #475569; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
         td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
-        .btc-alert { background-color: #fffbeb; color: #92400e; font-weight: 600; }
+        .btc-alert { background-color: #fffbeb; color: #92400e; }
         .tag { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
         .tag-btc { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
         .tag-q { background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe; }
         .tag-m { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
-        .date-cell { font-family: monospace; font-weight: 600; }
+        .total-cell { font-weight: 700; }
+        .target-met { color: #16a34a; background: #f0fdf4; }
+        .progress-bar-container { width: 100%; background: #e2e8f0; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
+        #progress-bar { height: 100%; background: #2563eb; width: 0%; transition: width 0.3s; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Weekly Strategic DCA</h1>
+    <h1>Strategic Portfolio Planner</h1>
     
+    <div class="progress-bar-container">
+        <div id="progress-bar"></div>
+    </div>
+
     <div class="controls">
         <div class="control-group">
-            <label>Monthly Budget (€)</label>
-            <input type="number" id="budget" value="1000">
+            <label>Current Allocation (€)</label>
+            <input type="number" id="currentAlloc" value="7000">
         </div>
         <div class="control-group">
-            <label>BTC Buy Level (€)</label>
+            <label>Target EOY (€)</label>
+            <input type="number" id="targetAlloc" value="20000">
+        </div>
+        <div class="control-group">
+            <label>Current Week # (1-52)</label>
+            <input type="number" id="startWeek" value="16">
+        </div>
+        <div class="control-group">
+            <label>Monthly Budget (€)</label>
+            <input type="number" id="budget" value="1400">
+        </div>
+        <div class="control-group">
+            <label>BTC Level (€)</label>
             <input type="number" id="btcThreshold" value="65000">
         </div>
         <div class="control-group">
-            <label>Current BTC Price (€)</label>
+            <label>BTC Price (€)</label>
             <input type="number" id="btcPrice" value="68000">
         </div>
     </div>
@@ -46,10 +65,11 @@
     <table id="dcaTable">
         <thead>
             <tr>
+                <th>Week</th>
                 <th>Date (Thu)</th>
                 <th>Product</th>
                 <th>Amount</th>
-                <th>Strategy Focus</th>
+                <th>New Total</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -57,83 +77,92 @@
 </div>
 
 <script>
-    function getThursdaysInMonth(month, year) {
-        let thursdays = [];
-        let date = new Date(year, month, 1);
-        while (date.getMonth() === month) {
-            if (date.getDay() === 4) thursdays.push(new Date(date));
-            date.setDate(date.getDate() + 1);
-        }
-        return thursdays;
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
 
     function generateSchedule() {
         const tableBody = document.getElementById('tableBody');
-        const budget = parseFloat(document.getElementById('budget').value);
-        const threshold = parseFloat(document.getElementById('btcThreshold').value);
-        const currentPrice = parseFloat(document.getElementById('btcPrice').value);
+        const budget = parseFloat(document.getElementById('budget').value) || 0;
+        const target = parseFloat(document.getElementById('targetAlloc').value) || 0;
+        const threshold = parseFloat(document.getElementById('btcThreshold').value) || 0;
+        const currentPrice = parseFloat(document.getElementById('btcPrice').value) || 0;
+        const startWeek = parseInt(document.getElementById('startWeek').value) || 1;
+        let runningTotal = parseFloat(document.getElementById('currentAlloc').value) || 0;
         
         tableBody.innerHTML = '';
-        let quarterlyRotation = 0;
         const qAssets = ['STRD', 'STRK', 'STRF'];
+        let quarterlyRotation = 0;
 
-        // Start from April 2026 to Dec 2026
-        for (let m = 3; m < 12; m++) {
-            const thursdays = getThursdaysInMonth(m, 2026);
-            const weeklyAmount = budget / thursdays.length;
-
-            thursdays.forEach((date, index) => {
-                // Ignore dates before April 1st
-                if (m === 3 && date.getDate() < 1) return;
-
-                let row = document.createElement('tr');
-                let product = "";
-                let typeClass = "";
-                let reason = "";
-
-                if (currentPrice < threshold) {
-                    product = "BTC";
-                    typeClass = "tag-btc";
-                    reason = "Price Below Threshold";
-                    row.className = "btc-alert";
-                } else {
-                    // Weekly Rotation Logic
-                    if (index === 0) {
-                        product = "STRC";
-                        typeClass = "tag-m";
-                        reason = "Early Month Accrual (STRC)";
-                    } else if (index === 1 || index === 2) {
-                        // Priority to Quarterly assets in peak months
-                        if ([5, 8, 11].includes(m)) {
-                            product = qAssets[quarterlyRotation % 3];
-                            typeClass = "tag-q";
-                            reason = `Quarterly Div Target (${product})`;
-                            quarterlyRotation++;
-                        } else {
-                            product = "STRK";
-                            typeClass = "tag-q";
-                            reason = "Diversification (Weekly)";
-                        }
-                    } else {
-                        product = "SATA";
-                        typeClass = "tag-m";
-                        reason = "End of Month Ex-Div (SATA)";
-                    }
-                }
-
-                row.innerHTML = `
-                    <td class="date-cell">${date.toLocaleDateString('en-GB')}</td>
-                    <td><span class="tag ${typeClass}">${product}</span></td>
-                    <td>${weeklyAmount.toFixed(2)} €</td>
-                    <td><small>${reason}</small></td>
-                `;
-                tableBody.appendChild(row);
-            });
+        // Find all Thursdays in 2026
+        let date = new Date('2026-01-01');
+        let thursdays = [];
+        while (date.getFullYear() === 2026) {
+            if (date.getDay() === 4) thursdays.push(new Date(date));
+            date.setDate(date.getDate() + 1);
         }
+
+        thursdays.forEach(tDate => {
+            const wNum = getWeekNumber(tDate);
+            if (wNum < startWeek) return;
+
+            // Simple monthly budget distribution (700 / 4 weeks usually)
+            const weeklyAmount = budget / 4; 
+            
+            let product = "";
+            let typeClass = "";
+            let isPreferred = false;
+            let month = tDate.getMonth();
+            let day = tDate.getDate();
+
+            if (currentPrice < threshold) {
+                product = "BTC";
+                typeClass = "tag-btc";
+            } else {
+                isPreferred = true;
+                // Strategic Logic
+                if (day <= 7) {
+                    product = "STRC"; typeClass = "tag-m";
+                } else if (day > 7 && day <= 21) {
+                    if ([5, 8, 11].includes(month)) {
+                        product = qAssets[quarterlyRotation % 3];
+                        typeClass = "tag-q";
+                        quarterlyRotation++;
+                    } else {
+                        product = "STRK"; typeClass = "tag-q";
+                    }
+                } else {
+                    product = "SATA"; typeClass = "tag-m";
+                }
+            }
+
+            if (isPreferred) runningTotal += weeklyAmount;
+
+            const isMet = runningTotal >= target;
+            const row = document.createElement('tr');
+            if (isMet) row.className = 'target-met';
+            if (product === "BTC") row.classList.add('btc-alert');
+
+            row.innerHTML = `
+                <td>${wNum}</td>
+                <td class="date-cell">${tDate.toLocaleDateString('en-GB')}</td>
+                <td><span class="tag ${typeClass}">${product}</span></td>
+                <td>${weeklyAmount.toFixed(2)} €</td>
+                <td class="total-cell">${runningTotal.toLocaleString('de-DE', {minimumFractionDigits: 2})} €</td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Update Progress Bar
+        const progress = Math.min((runningTotal / target) * 100, 100);
+        document.getElementById('progress-bar').style.width = progress + "%";
     }
 
     document.querySelectorAll('input').forEach(i => i.addEventListener('input', generateSchedule));
-    generateSchedule();
+    window.onload = generateSchedule;
 </script>
 
 </body>
