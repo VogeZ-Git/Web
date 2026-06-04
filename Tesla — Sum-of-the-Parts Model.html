@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<!-- saved from url=(0092)file:///L:/Proton/My%20files/Claude%20Cowork/Projects/Tesla%20Modeling/Tesla_SOTP_Model.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tesla — Sum-of-the-Parts Model</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+    --txt:#e7e9ee; --mut:#9aa3b2; --accent:#e82127; --accent2:#3b82f6;
+    --good:#22c55e; --bad:#ef4444; --warn:#f59e0b;
+    --input:#11141a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.45}
+  .wrap{max-width:1280px;margin:0 auto;padding:22px}
+  h1{font-size:24px;margin:0 0 2px}
+  h2{font-size:16px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .sub{color:var(--mut);font-size:13px;margin-bottom:16px}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}
+  .seg-toggle{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg-toggle button{background:var(--panel);color:var(--mut);border:0;padding:9px 16px;cursor:pointer;font-size:13px;font-weight:bold}
+  .seg-toggle button.active{background:var(--accent);color:#fff}
+  .pill{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--mut);font-size:12px}
+  .pill b{color:var(--txt)}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px}
+  .btn:hover{border-color:var(--accent2)}
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:8px 0 4px}
+  .yearblock{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .yearblock h3{margin:0 0 10px;font-size:14px;color:var(--mut);font-weight:bold;letter-spacing:.4px}
+  .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .metric .v{font-size:22px;font-weight:bold}
+  .metric .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0;background:var(--bg)}
+  td.name,th.name{text-align:left}
+  tbody tr:hover{background:var(--panel)}
+  tfoot td{font-weight:bold;border-top:2px solid var(--line);background:var(--panel2)}
+  input.cell{width:84px;background:var(--input);border:1px solid var(--line);color:#7dd3fc;border-radius:6px;padding:5px 6px;text-align:right;font-size:13px;font-family:inherit}
+  input.cell:focus{outline:none;border-color:var(--accent2)}
+  input.cell.pct{color:#fcd34d;width:64px}
+  input.cell.pe{color:#86efac;width:58px}
+  .barcell{display:inline-block;height:10px;background:var(--accent2);border-radius:3px;vertical-align:middle}
+  .up{color:var(--good)} .down{color:var(--bad)}
+  .note{color:var(--mut);font-size:12px}
+  .notes-table td,.notes-table th{text-align:left;vertical-align:top;font-size:12px}
+  .notes-table td:first-child{font-weight:bold;color:var(--txt);white-space:nowrap}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0}
+  summary{cursor:pointer;font-weight:bold}
+  .disc{background:#1a1410;border:1px solid #5a3a18;border-radius:10px;padding:12px 14px;color:#e8c79a;font-size:12px;margin-top:18px}
+  a{color:var(--accent2)}
+  .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:var(--panel2);color:var(--mut);margin-left:6px;border:1px solid var(--line)}
+  .est{color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tesla, Inc. — Sum-of-the-Parts Valuation Model</h1>
+  <div class="sub">High-level SOTP across 12 lines of business. Set revenue, net margin and P/E per segment → flows to market cap → implied share price. As of 4 Jun 2026. <b>All blue/yellow/green cells are editable.</b></div>
+
+  <div class="bar">
+    <div class="seg-toggle" id="scenToggle">
+      <button data-s="cons">Conservative / Skeptic</button>
+      <button data-s="bal" class="active">Balanced / Consensus</button>
+      <button data-s="bull">Bull / Musk-aligned</button>
+    </div>
+    <button class="btn" id="resetBtn">Reset scenario to defaults</button>
+    <span class="pill">Current price <b>$417.26</b></span>
+    <span class="pill">Market cap <b>~$1.57T</b></span>
+    <span class="pill">Shares out <b>3,756M</b></span>
+    <span class="pill">FY2025 revenue <b>$94.8B</b></span>
+  </div>
+
+  <div class="cards">
+    <div class="yearblock">
+      <h3>YEAR-END 2030 (≈4.5 yrs out)</h3>
+      <div class="metrics">
+        <div class="metric"><div class="v" id="mc30">$605B</div><div class="l">Implied market cap</div></div>
+        <div class="metric"><div class="v" id="px30">$154</div><div class="l">Implied share price</div></div>
+        <div class="metric"><div class="v down" id="up30">-63%</div><div class="l">vs $417.26 today</div></div>
+        <div class="metric"><div class="v down" id="cg30">-20%</div><div class="l">Implied annual return</div></div>
+      </div>
+    </div>
+    <div class="yearblock">
+      <h3>YEAR-END 2035 (≈9.5 yrs out)</h3>
+      <div class="metrics">
+        <div class="metric"><div class="v" id="mc35">$1.71T</div><div class="l">Implied market cap</div></div>
+        <div class="metric"><div class="v" id="px35">$422</div><div class="l">Implied share price</div></div>
+        <div class="metric"><div class="v up" id="up35">+1%</div><div class="l">vs $417.26 today</div></div>
+        <div class="metric"><div class="v up" id="cg35">+0%</div><div class="l">Implied annual return</div></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>The 12 lines of business <span class="note" id="scenLabel">— Balanced / Consensus case</span></h2>
+  <table id="modelTable">
+    <thead>
+      <tr>
+        <th class="name">Business line</th>
+        <th>2025 rev<br>($M)</th>
+        <th>2030 rev<br>($M)</th>
+        <th>2035 rev<br>($M)</th>
+        <th>Net<br>margin</th>
+        <th>P/E</th>
+        <th>2030 value<br>($B)</th>
+        <th>2035 value<br>($B)</th>
+        <th>% of '35</th>
+      </tr>
+    </thead>
+    <tbody id="rows"><tr><td class="name">1. New vehicle sales (Model 3/Y/S/X/Cybertruck)</td>
+      <td>64.500</td>
+      <td><input class="cell" data-i="0" data-f="r30" type="number" value="95000"></td>
+      <td><input class="cell" data-i="0" data-f="r35" type="number" value="120000"></td>
+      <td><input class="cell pct" data-i="0" data-f="m" type="number" step="0.01" value="0.09"></td>
+      <td><input class="cell pe" data-i="0" data-f="pe" type="number" step="0.5" value="15"></td>
+      <td>128</td>
+      <td>162</td>
+      <td>9%</td></tr><tr><td class="name">2. FSD &amp; software / connectivity</td>
+      <td>1.700</td>
+      <td><input class="cell" data-i="1" data-f="r30" type="number" value="11000"></td>
+      <td><input class="cell" data-i="1" data-f="r35" type="number" value="25000"></td>
+      <td><input class="cell pct" data-i="1" data-f="m" type="number" step="0.01" value="0.55"></td>
+      <td><input class="cell pe" data-i="1" data-f="pe" type="number" step="0.5" value="32"></td>
+      <td>194</td>
+      <td>440</td>
+      <td>26%</td></tr><tr><td class="name">3. Regulatory credits</td>
+      <td>1.800</td>
+      <td><input class="cell" data-i="2" data-f="r30" type="number" value="1300"></td>
+      <td><input class="cell" data-i="2" data-f="r35" type="number" value="600"></td>
+      <td><input class="cell pct" data-i="2" data-f="m" type="number" step="0.01" value="0.9"></td>
+      <td><input class="cell pe" data-i="2" data-f="pe" type="number" step="0.5" value="5"></td>
+      <td>6</td>
+      <td>3</td>
+      <td>0%</td></tr><tr><td class="name">4. Automotive leasing</td>
+      <td>1.500</td>
+      <td><input class="cell" data-i="3" data-f="r30" type="number" value="2200"></td>
+      <td><input class="cell" data-i="3" data-f="r35" type="number" value="2800"></td>
+      <td><input class="cell pct" data-i="3" data-f="m" type="number" step="0.01" value="0.1"></td>
+      <td><input class="cell pe" data-i="3" data-f="pe" type="number" step="0.5" value="8"></td>
+      <td>2</td>
+      <td>2</td>
+      <td>0%</td></tr><tr><td class="name">5. Energy storage (Megapack / Powerwall)</td>
+      <td>12.000</td>
+      <td><input class="cell" data-i="4" data-f="r30" type="number" value="42000"></td>
+      <td><input class="cell" data-i="4" data-f="r35" type="number" value="75000"></td>
+      <td><input class="cell pct" data-i="4" data-f="m" type="number" step="0.01" value="0.12"></td>
+      <td><input class="cell pe" data-i="4" data-f="pe" type="number" step="0.5" value="20"></td>
+      <td>101</td>
+      <td>180</td>
+      <td>11%</td></tr><tr><td class="name">6. Solar &amp; energy services</td>
+      <td>770</td>
+      <td><input class="cell" data-i="5" data-f="r30" type="number" value="1500"></td>
+      <td><input class="cell" data-i="5" data-f="r35" type="number" value="3000"></td>
+      <td><input class="cell pct" data-i="5" data-f="m" type="number" step="0.01" value="0.06"></td>
+      <td><input class="cell pe" data-i="5" data-f="pe" type="number" step="0.5" value="11"></td>
+      <td>1</td>
+      <td>2</td>
+      <td>0%</td></tr><tr><td class="name">7. Supercharging network</td>
+      <td>900</td>
+      <td><input class="cell" data-i="6" data-f="r30" type="number" value="3500"></td>
+      <td><input class="cell" data-i="6" data-f="r35" type="number" value="7000"></td>
+      <td><input class="cell pct" data-i="6" data-f="m" type="number" step="0.01" value="0.2"></td>
+      <td><input class="cell pe" data-i="6" data-f="pe" type="number" step="0.5" value="20"></td>
+      <td>14</td>
+      <td>28</td>
+      <td>2%</td></tr><tr><td class="name">8. Insurance</td>
+      <td>1.000</td>
+      <td><input class="cell" data-i="7" data-f="r30" type="number" value="4500"></td>
+      <td><input class="cell" data-i="7" data-f="r35" type="number" value="10000"></td>
+      <td><input class="cell pct" data-i="7" data-f="m" type="number" step="0.01" value="0.08"></td>
+      <td><input class="cell pe" data-i="7" data-f="pe" type="number" step="0.5" value="16"></td>
+      <td>6</td>
+      <td>13</td>
+      <td>1%</td></tr><tr><td class="name">9. Service, used cars, parts &amp; merch</td>
+      <td>10.630</td>
+      <td><input class="cell" data-i="8" data-f="r30" type="number" value="17000"></td>
+      <td><input class="cell" data-i="8" data-f="r35" type="number" value="24000"></td>
+      <td><input class="cell pct" data-i="8" data-f="m" type="number" step="0.01" value="0.05"></td>
+      <td><input class="cell pe" data-i="8" data-f="pe" type="number" step="0.5" value="11"></td>
+      <td>9</td>
+      <td>13</td>
+      <td>1%</td></tr><tr><td class="name">10. Robotaxi / autonomous mobility</td>
+      <td>20</td>
+      <td><input class="cell" data-i="9" data-f="r30" type="number" value="10000"></td>
+      <td><input class="cell" data-i="9" data-f="r35" type="number" value="55000"></td>
+      <td><input class="cell pct" data-i="9" data-f="m" type="number" step="0.01" value="0.28"></td>
+      <td><input class="cell pe" data-i="9" data-f="pe" type="number" step="0.5" value="30"></td>
+      <td>84</td>
+      <td>462</td>
+      <td>27%</td></tr><tr><td class="name">11. Optimus (humanoid robots)</td>
+      <td>10</td>
+      <td><input class="cell" data-i="10" data-f="r30" type="number" value="6000"></td>
+      <td><input class="cell" data-i="10" data-f="r35" type="number" value="45000"></td>
+      <td><input class="cell pct" data-i="10" data-f="m" type="number" step="0.01" value="0.18"></td>
+      <td><input class="cell pe" data-i="10" data-f="pe" type="number" step="0.5" value="33"></td>
+      <td>36</td>
+      <td>267</td>
+      <td>16%</td></tr><tr><td class="name">12. AI, Dojo, compute &amp; licensing</td>
+      <td>50</td>
+      <td><input class="cell" data-i="11" data-f="r30" type="number" value="2500"></td>
+      <td><input class="cell" data-i="11" data-f="r35" type="number" value="14000"></td>
+      <td><input class="cell pct" data-i="11" data-f="m" type="number" step="0.01" value="0.35"></td>
+      <td><input class="cell pe" data-i="11" data-f="pe" type="number" step="0.5" value="28"></td>
+      <td>25</td>
+      <td>137</td>
+      <td>8%</td></tr></tbody>
+    <tfoot>
+      <tr>
+        <td class="name">TOTAL — implied equity value</td>
+        <td id="t25">94.880</td><td></td><td></td><td></td><td></td>
+        <td id="t30">$605B</td><td id="t35">$1709B</td><td>100%</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <h2>Value contribution (2035, active scenario)</h2>
+  <table><tbody id="contrib"><tr><td class="name" style="width:260px">10. Robotaxi / autonomous mobility</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:420px"></span></td>
+      <td style="width:90px">$462B</td></tr><tr><td class="name" style="width:260px">2. FSD &amp; software / connectivity</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:400px"></span></td>
+      <td style="width:90px">$440B</td></tr><tr><td class="name" style="width:260px">11. Optimus (humanoid robots)</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:242.99999999999997px"></span></td>
+      <td style="width:90px">$267B</td></tr><tr><td class="name" style="width:260px">5. Energy storage (Megapack / Powerwall)</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:163.63636363636363px"></span></td>
+      <td style="width:90px">$180B</td></tr><tr><td class="name" style="width:260px">1. New vehicle sales (Model 3/Y/S/X/Cybertruck)</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:147.27272727272725px"></span></td>
+      <td style="width:90px">$162B</td></tr><tr><td class="name" style="width:260px">12. AI, Dojo, compute &amp; licensing</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:124.72727272727269px"></span></td>
+      <td style="width:90px">$137B</td></tr><tr><td class="name" style="width:260px">7. Supercharging network</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:25.454545454545453px"></span></td>
+      <td style="width:90px">$28B</td></tr><tr><td class="name" style="width:260px">9. Service, used cars, parts &amp; merch</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:11.999999999999998px"></span></td>
+      <td style="width:90px">$13B</td></tr><tr><td class="name" style="width:260px">8. Insurance</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:11.636363636363635px"></span></td>
+      <td style="width:90px">$13B</td></tr><tr><td class="name" style="width:260px">3. Regulatory credits</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:2.454545454545454px"></span></td>
+      <td style="width:90px">$3B</td></tr><tr><td class="name" style="width:260px">4. Automotive leasing</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:2.036363636363636px"></span></td>
+      <td style="width:90px">$2B</td></tr><tr><td class="name" style="width:260px">6. Solar &amp; energy services</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:2px"></span></td>
+      <td style="width:90px">$2B</td></tr></tbody></table>
+
+  <h2>Share count / dilution (editable)</h2>
+  <table style="max-width:560px">
+    <thead><tr><th class="name">Diluted shares (M)</th><th>2030</th><th>2035</th></tr></thead>
+    <tbody>
+      <tr><td class="name">Active scenario</td>
+        <td><input class="cell" id="sh30" type="number"></td>
+        <td><input class="cell" id="sh35" type="number"></td></tr>
+    </tbody>
+  </table>
+  <div class="note">Today: 3,756M shares. Higher dilution → lower per-share value. Edit to model capital raises / buybacks / comp.</div>
+
+  <h2>Segment notes — history, KPIs &amp; rollout</h2>
+  <table class="notes-table">
+    <thead><tr><th>Line</th><th>Where it is now &amp; history</th><th>Expansion KPI / rollout to watch</th></tr></thead>
+    <tbody id="notes"><tr><td>1. New vehicle sales (Model 3/Y/S/X/Cybertruck)</td><td>Core business, ~1.64M deliveries in 2025; auto revenue $69.5B but fell ~10% YoY on price cuts and soft demand. Margins compressed from 2022 peaks.</td><td>Unit deliveries, ASP, gross margin ex-credits; ramp of next-gen lower-cost platform and refreshed line-up.</td></tr><tr><td>2. FSD &amp; software / connectivity</td><td>High-margin, recognized as deferred revenue is released; embedded in automotive today. Take-rate historically low single-digit % to low-teens.</td><td>FSD subscription/take rate, miles between interventions, FSD v15 rewrite, regulatory approval for unsupervised use.</td></tr><tr><td>3. Regulatory credits</td><td>Near-100% margin but structurally declining (down ~30% in 2025 as rivals build their own EVs and US policy shifts). A melting ice cube.</td><td>Pace of decline; durability of credit demand under changing emissions rules.</td></tr><tr><td>4. Automotive leasing</td><td>Steady, capital-intensive financing line tied to delivery volume.</td><td>Lease mix %, residual values, financing spreads.</td></tr><tr><td>5. Energy storage (Megapack / Powerwall)</td><td>Fastest-growing segment: 46.7 GWh deployed in 2025 (+49% YoY), record Q4 of 14.2 GWh. Energy segment revenue $12.8B (+27%).</td><td>GWh deployed, Megafactory capacity (Lathrop/Shanghai), gross margin, backlog.</td></tr><tr><td>6. Solar &amp; energy services</td><td>Solar roof/retrofit + grid services. Has stagnated for years; small relative to storage.</td><td>Solar MW deployed, attach rate to Powerwall, virtual power plant enrollment.</td></tr><tr><td>7. Supercharging network</td><td>~70k+ stalls globally; opened to non-Tesla EVs (NACS adoption by most US automakers). Becomes a third-party utility, not just a cost center.</td><td>Stalls, throughput/utilization, non-Tesla charging share, $/kWh margin.</td></tr><tr><td>8. Insurance</td><td>Real-time, telematics-priced insurance available in a growing set of US states. Small but strategically tied to FSD safety data.</td><td>States/countries live, written premium, loss ratio, attach rate to Tesla owners.</td></tr><tr><td>9. Service, used cars, parts &amp; merch</td><td>Remainder of Services &amp; Other: used-vehicle sales, parts, body shops, merch. Grows with the installed fleet.</td><td>Installed base size, revenue per vehicle in operation, service margin.</td></tr><tr><td>10. Robotaxi / autonomous mobility</td><td>Launched Austin mid-2025; mid-2026 covers Austin metro + small Dallas/Houston zones but fleet is still tiny (~20–42 vehicles) and shrinking pending FSD v15. Waymo runs ~3,000 cars for comparison.</td><td>Driverless vehicles in fleet, cities live, paid rides/week, cost per mile, safety/intervention rate, regulatory clearance.</td></tr><tr><td>11. Optimus (humanoid robots)</td><td>V3 production targeted to start ~summer 2026 at Fremont; only a few hundred units made in 2025 vs a 5,000 target. Musk floats 1M/yr capacity and a 10M long-term goal — highly speculative.</td><td>Units produced/yr, unique-parts supply chain, internal vs external deployment, unit price &amp; cost curve.</td></tr><tr><td>12. AI, Dojo, compute &amp; licensing</td><td>Training compute (Dojo / NVIDIA clusters), potential FSD licensing to other OEMs, and data/AI services. Essentially no standalone revenue today.</td><td>Compute capacity, any third-party FSD licensing deals, external AI/data revenue.</td></tr></tbody>
+  </table>
+
+  <details>
+    <summary>Methodology &amp; how the math works</summary>
+    <p class="note">For each line: <b>implied value ($B) = revenue ($M) × net margin × P/E ÷ 1,000</b>. The same margin and P/E are applied to both the 2030 and 2035 revenue (a single forward multiple on target-year earnings). Summing all 12 lines gives implied equity value (market cap); dividing by diluted shares gives the implied share price. Implied annual return compounds from today's $417.26 over ~4.5 yrs (2030) and ~9.5 yrs (2035). This is an <b>undiscounted</b> target-year valuation — it does not discount future value back to today, so think of the share price as the price you'd expect <i>at</i> that future date if the assumptions hold.</p>
+    <p class="note">Pre-revenue/early lines (Robotaxi, Optimus, AI) are valued the same way once they generate revenue and earnings. Because they start near zero, almost all of their value sits in the assumptions you set — they are the swing factor between scenarios.</p>
+  </details>
+
+  <div class="disc">
+    <b>Read this before trusting any number.</b> Tesla reports only three segments (Automotive, Energy generation &amp; storage, Services &amp; other). The 12-line split here is an analytical construct. The FY2025 revenue for <span class="est">FSD &amp; software, Supercharging, Insurance, Solar, Regulatory credits and Leasing</span> are <b>estimates</b> — Tesla does not disclose them individually — calibrated to sum to the reported $94.8B. All 2030/2035 figures, margins and multiples are <b>illustrative starting assumptions, not consensus forecasts</b>; analyst price targets for TSLA span a very wide range. The default "Balanced" case deliberately values the company on fundamentals and lands below today's price in 2030 — i.e. it shows the current quote already prices in heavy execution of robotaxi/Optimus. Adjust everything to your own view. This is not investment advice.
+  </div>
+</div>
+
+<script>
+const DATA = {
+  current:{price:417.26, shares:3756},
+  shares:{cons:{y30:3950,y35:4100}, bal:{y30:3920,y35:4050}, bull:{y30:3880,y35:3950}},
+  segments:[
+    {name:"1. New vehicle sales (Model 3/Y/S/X/Cybertruck)", rev2025:64500,
+      cons:{r30:72000,r35:80000,m:.06,pe:10}, bal:{r30:95000,r35:120000,m:.09,pe:15}, bull:{r30:120000,r35:165000,m:.11,pe:19},
+      hist:"Core business, ~1.64M deliveries in 2025; auto revenue $69.5B but fell ~10% YoY on price cuts and soft demand. Margins compressed from 2022 peaks.",
+      kpi:"Unit deliveries, ASP, gross margin ex-credits; ramp of next-gen lower-cost platform and refreshed line-up."},
+    {name:"2. FSD &amp; software / connectivity", rev2025:1700,
+      cons:{r30:4000,r35:8000,m:.40,pe:18}, bal:{r30:11000,r35:25000,m:.55,pe:32}, bull:{r30:20000,r35:50000,m:.65,pe:45},
+      hist:"High-margin, recognized as deferred revenue is released; embedded in automotive today. Take-rate historically low single-digit % to low-teens.",
+      kpi:"FSD subscription/take rate, miles between interventions, FSD v15 rewrite, regulatory approval for unsupervised use."},
+    {name:"3. Regulatory credits", rev2025:1800,
+      cons:{r30:800,r35:200,m:.90,pe:3}, bal:{r30:1300,r35:600,m:.90,pe:5}, bull:{r30:2000,r35:1200,m:.90,pe:6},
+      hist:"Near-100% margin but structurally declining (down ~30% in 2025 as rivals build their own EVs and US policy shifts). A melting ice cube.",
+      kpi:"Pace of decline; durability of credit demand under changing emissions rules."},
+    {name:"4. Automotive leasing", rev2025:1500,
+      cons:{r30:1500,r35:1500,m:.10,pe:6}, bal:{r30:2200,r35:2800,m:.10,pe:8}, bull:{r30:3000,r35:4500,m:.10,pe:10},
+      hist:"Steady, capital-intensive financing line tied to delivery volume.",
+      kpi:"Lease mix %, residual values, financing spreads."},
+    {name:"5. Energy storage (Megapack / Powerwall)", rev2025:12000,
+      cons:{r30:24000,r35:38000,m:.08,pe:12}, bal:{r30:42000,r35:75000,m:.12,pe:20}, bull:{r30:60000,r35:120000,m:.15,pe:26},
+      hist:"Fastest-growing segment: 46.7 GWh deployed in 2025 (+49% YoY), record Q4 of 14.2 GWh. Energy segment revenue $12.8B (+27%).",
+      kpi:"GWh deployed, Megafactory capacity (Lathrop/Shanghai), gross margin, backlog."},
+    {name:"6. Solar &amp; energy services", rev2025:770,
+      cons:{r30:900,r35:1200,m:.05,pe:8}, bal:{r30:1500,r35:3000,m:.06,pe:11}, bull:{r30:3000,r35:7000,m:.08,pe:15},
+      hist:"Solar roof/retrofit + grid services. Has stagnated for years; small relative to storage.",
+      kpi:"Solar MW deployed, attach rate to Powerwall, virtual power plant enrollment."},
+    {name:"7. Supercharging network", rev2025:900,
+      cons:{r30:2000,r35:3500,m:.15,pe:12}, bal:{r30:3500,r35:7000,m:.20,pe:20}, bull:{r30:5500,r35:13000,m:.25,pe:28},
+      hist:"~70k+ stalls globally; opened to non-Tesla EVs (NACS adoption by most US automakers). Becomes a third-party utility, not just a cost center.",
+      kpi:"Stalls, throughput/utilization, non-Tesla charging share, $/kWh margin."},
+    {name:"8. Insurance", rev2025:1000,
+      cons:{r30:2200,r35:4000,m:.06,pe:10}, bal:{r30:4500,r35:10000,m:.08,pe:16}, bull:{r30:8000,r35:20000,m:.10,pe:22},
+      hist:"Real-time, telematics-priced insurance available in a growing set of US states. Small but strategically tied to FSD safety data.",
+      kpi:"States/countries live, written premium, loss ratio, attach rate to Tesla owners."},
+    {name:"9. Service, used cars, parts &amp; merch", rev2025:10630,
+      cons:{r30:13000,r35:16000,m:.04,pe:8}, bal:{r30:17000,r35:24000,m:.05,pe:11}, bull:{r30:22000,r35:33000,m:.06,pe:13},
+      hist:"Remainder of Services & Other: used-vehicle sales, parts, body shops, merch. Grows with the installed fleet.",
+      kpi:"Installed base size, revenue per vehicle in operation, service margin."},
+    {name:"10. Robotaxi / autonomous mobility", rev2025:20,
+      cons:{r30:1500,r35:12000,m:.15,pe:15}, bal:{r30:10000,r35:55000,m:.28,pe:30}, bull:{r30:30000,r35:160000,m:.38,pe:42},
+      hist:"Launched Austin mid-2025; mid-2026 covers Austin metro + small Dallas/Houston zones but fleet is still tiny (~20–42 vehicles) and shrinking pending FSD v15. Waymo runs ~3,000 cars for comparison.",
+      kpi:"Driverless vehicles in fleet, cities live, paid rides/week, cost per mile, safety/intervention rate, regulatory clearance."},
+    {name:"11. Optimus (humanoid robots)", rev2025:10,
+      cons:{r30:800,r35:8000,m:.10,pe:18}, bal:{r30:6000,r35:45000,m:.18,pe:33}, bull:{r30:25000,r35:160000,m:.25,pe:48},
+      hist:"V3 production targeted to start ~summer 2026 at Fremont; only a few hundred units made in 2025 vs a 5,000 target. Musk floats 1M/yr capacity and a 10M long-term goal — highly speculative.",
+      kpi:"Units produced/yr, unique-parts supply chain, internal vs external deployment, unit price & cost curve."},
+    {name:"12. AI, Dojo, compute &amp; licensing", rev2025:50,
+      cons:{r30:500,r35:3000,m:.20,pe:15}, bal:{r30:2500,r35:14000,m:.35,pe:28}, bull:{r30:8000,r35:45000,m:.50,pe:42},
+      hist:"Training compute (Dojo / NVIDIA clusters), potential FSD licensing to other OEMs, and data/AI services. Essentially no standalone revenue today.",
+      kpi:"Compute capacity, any third-party FSD licensing deals, external AI/data revenue."}
+  ]
+};
+
+const fmtB = v => (v>=1000? '$'+(v/1000).toFixed(2)+'T' : '$'+v.toFixed(0)+'B');
+const fmtPx = v => '$'+v.toFixed(0);
+const fmtPct = v => (v>=0?'+':'')+ (v*100).toFixed(0)+'%';
+
+let scen='bal';
+let state={};
+function loadDefaults(){
+  state={cons:[],bal:[],bull:[],shares:JSON.parse(JSON.stringify(DATA.shares))};
+  for(const k of ['cons','bal','bull']){
+    state[k]=DATA.segments.map(s=>({...s[k]}));
+  }
+}
+loadDefaults();
+
+function calc(){
+  const segs=state[scen];
+  let t25=0,t30=0,t35=0;
+  const vals=segs.map((p,i)=>{
+    t25+=DATA.segments[i].rev2025;
+    const v30=p.r30*p.m*p.pe/1000;
+    const v35=p.r35*p.m*p.pe/1000;
+    t30+=v30; t35+=v35;
+    return {v30,v35};
+  });
+  return {vals,t25,t30,t35};
+}
+
+function render(){
+  document.getElementById('scenLabel').textContent =
+    '— '+({cons:'Conservative / Skeptic',bal:'Balanced / Consensus',bull:'Bull / Musk-aligned'})[scen]+' case';
+  const segs=state[scen];
+  const r=calc();
+  // rows
+  const rows=document.getElementById('rows');
+  rows.innerHTML='';
+  segs.forEach((p,i)=>{
+    const d=DATA.segments[i];
+    const v30=p.r30*p.m*p.pe/1000, v35=p.r35*p.m*p.pe/1000;
+    const pctv = r.t35>0? (v35/r.t35*100):0;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="name">${d.name}</td>
+      <td>${d.rev2025.toLocaleString()}</td>
+      <td><input class="cell" data-i="${i}" data-f="r30" type="number" value="${p.r30}"></td>
+      <td><input class="cell" data-i="${i}" data-f="r35" type="number" value="${p.r35}"></td>
+      <td><input class="cell pct" data-i="${i}" data-f="m" type="number" step="0.01" value="${p.m}"></td>
+      <td><input class="cell pe" data-i="${i}" data-f="pe" type="number" step="0.5" value="${p.pe}"></td>
+      <td>${v30.toFixed(0)}</td>
+      <td>${v35.toFixed(0)}</td>
+      <td>${pctv.toFixed(0)}%</td>`;
+    rows.appendChild(tr);
+  });
+  document.getElementById('t25').textContent=r.t25.toLocaleString();
+  document.getElementById('t30').textContent='$'+r.t30.toFixed(0)+'B';
+  document.getElementById('t35').textContent='$'+r.t35.toFixed(0)+'B';
+
+  // summary
+  const sh30=state.shares[scen].y30, sh35=state.shares[scen].y35;
+  const px30=r.t30*1000/sh30, px35=r.t35*1000/sh35;
+  const up30=px30/DATA.current.price-1, up35=px35/DATA.current.price-1;
+  const cg30=Math.pow(px30/DATA.current.price,1/4.5)-1;
+  const cg35=Math.pow(px35/DATA.current.price,1/9.5)-1;
+  document.getElementById('mc30').textContent=fmtB(r.t30);
+  document.getElementById('mc35').textContent=fmtB(r.t35);
+  document.getElementById('px30').textContent=fmtPx(px30);
+  document.getElementById('px35').textContent=fmtPx(px35);
+  const u30=document.getElementById('up30'),u35=document.getElementById('up35');
+  u30.textContent=fmtPct(up30); u30.className='v '+(up30>=0?'up':'down');
+  u35.textContent=fmtPct(up35); u35.className='v '+(up35>=0?'up':'down');
+  const c30=document.getElementById('cg30'),c35=document.getElementById('cg35');
+  c30.textContent=fmtPct(cg30); c30.className='v '+(cg30>=0?'up':'down');
+  c35.textContent=fmtPct(cg35); c35.className='v '+(cg35>=0?'up':'down');
+
+  // contribution bars (2035)
+  const contrib=document.getElementById('contrib');
+  contrib.innerHTML='';
+  const arr=segs.map((p,i)=>({name:DATA.segments[i].name,v:p.r35*p.m*p.pe/1000})).sort((a,b)=>b.v-a.v);
+  const max=Math.max(...arr.map(a=>a.v),1);
+  arr.forEach(a=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="name" style="width:260px">${a.name}</td>
+      <td style="text-align:left;width:auto"><span class="barcell" style="width:${Math.max(2,a.v/max*420)}px"></span></td>
+      <td style="width:90px">$${a.v.toFixed(0)}B</td>`;
+    contrib.appendChild(tr);
+  });
+
+  document.getElementById('sh30').value=sh30;
+  document.getElementById('sh35').value=sh35;
+}
+
+function renderNotes(){
+  const n=document.getElementById('notes'); n.innerHTML='';
+  DATA.segments.forEach(d=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${d.name}</td><td>${d.hist}</td><td>${d.kpi}</td>`;
+    n.appendChild(tr);
+  });
+}
+
+document.getElementById('rows').addEventListener('input',e=>{
+  const t=e.target; if(!t.dataset.f) return;
+  const i=+t.dataset.i, f=t.dataset.f, v=parseFloat(t.value);
+  if(!isNaN(v)) state[scen][i][f]=v;
+  render();
+});
+document.getElementById('sh30').addEventListener('input',e=>{const v=parseFloat(e.target.value); if(!isNaN(v)){state.shares[scen].y30=v; render();}});
+document.getElementById('sh35').addEventListener('input',e=>{const v=parseFloat(e.target.value); if(!isNaN(v)){state.shares[scen].y35=v; render();}});
+
+document.getElementById('scenToggle').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  scen=e.target.dataset.s;
+  [...e.currentTarget.children].forEach(b=>b.classList.toggle('active',b===e.target));
+  render();
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  const def=DATA.segments.map(s=>({...s[scen]}));
+  state[scen]=def;
+  state.shares[scen]=JSON.parse(JSON.stringify(DATA.shares[scen]));
+  render();
+});
+
+renderNotes();
+render();
+</script>
+
+
+</body></html>
