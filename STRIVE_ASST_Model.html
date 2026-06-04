@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRIVE (ASST) — Bitcoin Treasury Model</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0c0e14; --panel:#141822; --panel2:#1b2030; --line:#262c3d;
+    --txt:#e8ecf5; --muted:#8b93a7; --accent:#f7931a; --accent2:#3b82f6;
+    --green:#22c55e; --red:#ef4444; --purple:#a855f7; --teal:#14b8a6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.45;font-size:14px}
+  .wrap{max-width:1280px;margin:0 auto;padding:24px 18px 80px}
+  header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#c2410c);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#0c0e14}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.3px}
+  .sub{color:var(--muted);font-size:13px}
+  .pill{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+  h2{font-size:15px;font-weight:700;margin:26px 0 12px;display:flex;align-items:center;gap:8px}
+  h2 .bar{width:4px;height:16px;background:var(--accent);border-radius:2px}
+  .grid{display:grid;gap:12px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .cards{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+  .card .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+  .card .v{font-size:20px;font-weight:700}
+  .card .d{font-size:11px;margin-top:2px}
+  .up{color:var(--green)} .down{color:var(--red)}
+  label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)}
+  label.f input,label.f select{background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:8px 10px;font-size:14px;font-weight:600;width:100%}
+  label.f input:focus,label.f select:focus{outline:none;border-color:var(--accent)}
+  .inputs{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+  .slider-row{display:grid;grid-template-columns:1fr;gap:4px;margin-bottom:14px}
+  .slider-row .lab{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+  .slider-row .lab b{color:var(--accent);font-size:13px}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:4px;background:var(--panel2);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid #0c0e14}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid #0c0e14}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .tab{padding:7px 14px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);cursor:pointer;font-size:12px;font-weight:600}
+  .tab.active{background:var(--accent);color:#0c0e14;border-color:var(--accent)}
+  .chartbox{position:relative;height:340px}
+  .chartbox.sm{height:260px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{text-align:right;padding:7px 9px;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0;background:var(--panel)}
+  .scroll{max-height:340px;overflow:auto;border-radius:10px}
+  .two{grid-template-columns:1fr 1fr}
+  .three{grid-template-columns:repeat(3,1fr)}
+  .hl{background:linear-gradient(135deg,#1a1410,#1b2030);border-color:var(--accent)}
+  .hl .v{color:var(--accent)}
+  .note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{background:transparent;border:none;color:var(--muted);padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600}
+  .seg button.on{background:var(--accent);color:#0c0e14}
+  details{margin-top:10px}
+  summary{cursor:pointer;color:var(--muted);font-size:12px;padding:6px 0}
+  .flex{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+  @media(max-width:760px){.two,.three{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="logo">₿</div>
+    <div style="flex:1">
+      <h1>STRIVE (ASST) — Bitcoin Treasury Model</h1>
+      <div class="sub">One model: history → SATA funding engine → BTC CAGR → projected share price. <span class="pill">Solves for future ASST price</span></div>
+    </div>
+  </header>
+
+  <!-- ============ CURRENT STATE (EDITABLE) ============ -->
+  <h2><span class="bar"></span>Current State <span class="pill" style="font-weight:400">editable — paste fresh numbers to refresh the whole model</span></h2>
+  <div class="panel">
+    <div class="grid inputs">
+      <label class="f">BTC Holdings (₿)<input type="number" id="i_btc" value="16500.3" step="0.1"></label>
+      <label class="f">BTC Price ($)<input type="number" id="i_btcpx" value="73832" step="1"></label>
+      <label class="f">ASST Share Price ($)<input type="number" id="i_px" value="17.67" step="0.01"></label>
+      <label class="f">Basic Shares (M)<input type="number" id="i_basic" value="75.77" step="0.01"></label>
+      <label class="f">Diluted Shares (M)<input type="number" id="i_dil" value="105.11" step="0.01"></label>
+      <label class="f">Debt ($M)<input type="number" id="i_debt" value="0" step="1"></label>
+      <label class="f">Preferred / SATA ($M)<input type="number" id="i_pref" value="575.97" step="0.1"></label>
+      <label class="f">Cash &amp; equiv ($M)<input type="number" id="i_cash" value="146" step="1"></label>
+      <label class="f">SATA price ($)<input type="number" id="i_satapx" value="99.975" step="0.001"></label>
+      <label class="f">SATA dividend rate (%/yr)<input type="number" id="i_satadiv" value="13" step="0.1"></label>
+    </div>
+    <div class="note">Defaults captured 31 May 2026 from treasury.strive.com &amp; strc.live. Edit any cell and every chart, metric and projection below recalculates instantly.</div>
+  </div>
+
+  <!-- ============ LIVE SNAPSHOT METRICS ============ -->
+  <h2><span class="bar"></span>Snapshot Metrics</h2>
+  <div class="grid cards" id="snapCards"></div>
+  <div class="note" id="snapNote"></div>
+
+  <!-- ============ HISTORY ============ -->
+  <h2><span class="bar"></span>History <span class="pill" style="font-weight:400">the tracker tabs, as graphs</span></h2>
+  <div class="panel">
+    <div class="tabs" id="histTabs"></div>
+    <div class="chartbox"><canvas id="histChart"></canvas></div>
+    <div class="note" id="histNote"></div>
+  </div>
+
+  <details>
+    <summary>▸ Show / edit raw purchase history (drives the history charts)</summary>
+    <div class="panel" style="margin-top:8px">
+      <div class="scroll">
+        <table id="histTable"><thead><tr>
+          <th>Date</th><th>BTC Added</th><th>Px/BTC</th><th>Holdings</th><th>Basic (M)</th><th>Diluted (M)</th><th>Sats/Basic</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+      <div class="note">Source: treasury.strive.com purchase-history tab. To update, edit the <code>HISTORY</code> array near the top of this file's script.</div>
+    </div>
+  </details>
+
+  <!-- ============ SATA ENGINE ============ -->
+  <h2><span class="bar"></span>SATA Funding Engine <span class="pill" style="font-weight:400">the BTC-buying machine</span></h2>
+  <div class="grid two">
+    <div class="panel">
+      <div class="chartbox sm"><canvas id="sataChart"></canvas></div>
+      <div class="note">Weekly BTC purchased via the SATA ATM (strc.live). The ATM only issues when SATA trades ≥ $100 ("engine active"). Recent active weeks: 820–4,640 ₿/wk.</div>
+    </div>
+    <div class="panel">
+      <div class="grid cards" id="sataCards"></div>
+      <div class="note" id="sataNote"></div>
+    </div>
+  </div>
+
+  <!-- ============ ASSUMPTIONS ============ -->
+  <h2><span class="bar"></span>Projection Assumptions <span class="pill" style="font-weight:400">drive these → infer the share price</span></h2>
+  <div class="grid two">
+    <div class="panel">
+      <div class="slider-row">
+        <div class="lab"><span>Bitcoin price CAGR</span><b id="l_cagr">30%</b></div>
+        <input type="range" id="s_cagr" min="-30" max="80" value="30" step="1">
+      </div>
+      <div class="slider-row">
+        <div class="lab"><span>SATA raise / month (engine active)</span><b id="l_raise">$200M</b></div>
+        <input type="range" id="s_raise" min="0" max="800" value="200" step="10">
+      </div>
+      <div class="slider-row">
+        <div class="lab"><span>Months/yr engine is active</span><b id="l_active">9</b></div>
+        <input type="range" id="s_active" min="0" max="12" value="9" step="1">
+      </div>
+      <div class="slider-row">
+        <div class="lab"><span>Raise taper / yr (raise fades as it scales)</span><b id="l_taper">15%</b></div>
+        <input type="range" id="s_taper" min="0" max="50" value="15" step="1">
+      </div>
+    </div>
+    <div class="panel">
+      <div class="slider-row">
+        <div class="lab"><span>mNAV stabilization (EV/BTC-NAV at horizon)</span><b id="l_mnav">1.20x</b></div>
+        <input type="range" id="s_mnav" min="80" max="300" value="120" step="1">
+      </div>
+      <div class="slider-row">
+        <div class="lab"><span>Common share dilution / yr (ATM, comp)</span><b id="l_dil">5%</b></div>
+        <input type="range" id="s_dil" min="0" max="40" value="5" step="1">
+      </div>
+      <div class="slider-row">
+        <div class="lab"><span>Projection horizon</span><b id="l_yrs">5 yrs</b></div>
+        <input type="range" id="s_yrs" min="1" max="10" value="5" step="1">
+      </div>
+      <div class="flex" style="margin-top:6px">
+        <div>
+          <div class="lab" style="margin-bottom:4px;font-size:12px;color:var(--muted)">Valuation share base</div>
+          <div class="seg" id="seg_base"><button data-v="basic" class="on">Basic</button><button data-v="diluted">Diluted</button></div>
+        </div>
+        <div>
+          <div class="lab" style="margin-bottom:4px;font-size:12px;color:var(--muted)">SATA dividends funded by</div>
+          <div class="seg" id="seg_div"><button data-v="pref" class="on">New SATA</button><button data-v="btc">BTC sales</button><button data-v="ignore">Ignore</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OUTPUT ============ -->
+  <h2><span class="bar"></span>Projected Outcome <span class="pill" style="font-weight:400">the headline</span></h2>
+  <div class="grid cards" id="outCards"></div>
+
+  <div class="panel" style="margin-top:12px">
+    <div class="flex" style="justify-content:space-between;margin-bottom:8px">
+      <div class="tabs" id="projTabs" style="margin:0"></div>
+      <div class="seg" id="seg_scale"><button data-v="linear" class="on">Linear</button><button data-v="log">Log</button></div>
+    </div>
+    <div class="chartbox"><canvas id="projChart"></canvas></div>
+    <div class="note" id="projNote"></div>
+  </div>
+
+  <details>
+    <summary>▸ Show projection table (annual)</summary>
+    <div class="panel" style="margin-top:8px">
+      <div class="scroll">
+        <table id="projTable"><thead><tr>
+          <th>Year</th><th>BTC Px</th><th>Holdings</th><th>Pref $M</th><th>BTC NAV $M</th><th>mNAV</th>
+          <th>Ampl.</th><th>Sats/Sh</th><th>CEBE Sats/Sh</th><th>Mkt Cap $M</th><th>Share Px</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </details>
+
+  <div class="note" style="margin-top:24px;border-top:1px solid var(--line);padding-top:14px">
+    <b>How the model works.</b> BTC price compounds at your CAGR. Each active month the SATA ATM raises capital → buys BTC (price ÷ holdings, no common dilution — that's the amplification thesis). Preferred grows with raises (and dividends, if funded by new SATA). Common shares grow only by your dilution input. Share price = (mNAV × BTC&nbsp;NAV − debt − preferred + cash) ÷ shares, with mNAV gliding linearly from today's level to your stabilization target. <b>Amplification ratio</b> = (debt + preferred) ÷ BTC&nbsp;NAV; <b>CEBE</b> (Common Equity Bitcoin Exposure) = holdings × (1 − amplification) ÷ shares. Not investment advice — indicative figures for scenario exploration.
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   DATA — captured 31 May 2026. Edit HISTORY / current inputs to refresh.
+   Source: treasury.strive.com (purchase history, credit, shares),
+           strc.live/ticker/sata (SATA ATM engine).
+   ============================================================ */
+const HISTORY = [
+  // date, btcAdded, pxPerBtc, holdings, basicM, dilutedM
+  ["2025-09-12",     69,116495,      69, 41.42, 69.19],
+  ["2025-09-14", 5816.59,116047, 5885.59, 41.42, 69.19],
+  ["2025-10-28",   72.26,114304, 5957.86, 43.62, 70.59],
+  ["2025-11-09", 1567.16,103315, 7525.02, 43.98, 70.71],
+  ["2025-12-31",  101.79, 94525, 7626.80, 44.77, 71.36],
+  ["2026-01-13",  123.02, 91561, 7749.83, 44.77, 71.36],
+  ["2026-01-16", 5048.10, 95524,12797.90, 62.37, 91.01],
+  ["2026-01-28",  333.89, 89851,13131.80, 62.37, 90.12],
+  ["2026-03-11",  179.12, 72579,13310.90, 66.78, 94.53],
+  ["2026-03-17",     317, 72555,13627.90, 69.16, 98.58],
+  ["2026-04-02",  113.01, 68577,13740.90, 69.21, 98.63],
+  ["2026-04-13",   26.96, 72330,13767.90, 69.72, 99.14],
+  ["2026-04-24",  788.61, 77890,14556.50, 72.78,102.20],
+  ["2026-05-01",  443.93, 76307,15000.50, 73.02,102.44],
+  ["2026-05-12",    8.68, 80042,15009.10, 73.08,102.42],
+  ["2026-05-18",  381.61, 79348,15390.70, 73.54,102.87],
+  ["2026-05-22", 1109.59, 76989,16500.30, 75.77,105.11],
+];
+// SATA weekly BTC purchased via ATM (strc.live)
+const SATA_WEEKS = [
+  ["May 18–22", 820.48],
+  ["May 25–29", 4639.58],
+];
+const SATA_FACTS = {
+  price:99.975, threshold:100, status:"STANDBY", yield:13.0,
+  twoWk:5460.06, confirmedBtc:5822, sataShares:3.32, prefMarketCap:331.9, // strc confirmed-only
+  nextExDiv:"Jun 1", perShareMo:1.0833
+};
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $=id=>document.getElementById(id);
+const fmt=(n,d=0)=>n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const usd=(n,d=0)=>'$'+fmt(n,d);
+const M=n=>'$'+fmt(n,n<10?2:0)+'M';
+const B=n=>'$'+fmt(n/1000,2)+'B';
+const pct=(n,d=1)=>fmt(n,d)+'%';
+const COL={accent:'#f7931a',blue:'#3b82f6',green:'#22c55e',red:'#ef4444',purple:'#a855f7',teal:'#14b8a6',muted:'#8b93a7'};
+Chart.defaults.color='#8b93a7';
+Chart.defaults.font.family="-apple-system,Segoe UI,Roboto,sans-serif";
+Chart.defaults.font.size=11;
+
+function state(){
+  return {
+    btc:+$('i_btc').value, btcpx:+$('i_btcpx').value, px:+$('i_px').value,
+    basic:+$('i_basic').value, dil:+$('i_dil').value,
+    debt:+$('i_debt').value, pref:+$('i_pref').value, cash:+$('i_cash').value,
+    satapx:+$('i_satapx').value, satadiv:+$('i_satadiv').value,
+  };
+}
+function assumptions(){
+  return {
+    cagr:+$('s_cagr').value/100, raise:+$('s_raise').value, active:+$('s_active').value,
+    taper:+$('s_taper').value/100, mnavEnd:+$('s_mnav').value/100, dil:+$('s_dil').value/100,
+    yrs:+$('s_yrs').value, base:segVal('seg_base'), divMode:segVal('seg_div'), scale:segVal('seg_scale'),
+  };
+}
+function segVal(id){const b=$(id).querySelector('button.on');return b?b.dataset.v:null;}
+
+/* ============================================================
+   SNAPSHOT METRICS
+   ============================================================ */
+function currentMetrics(){
+  const s=state();
+  const btcNav=s.btc*s.btcpx;                       // $
+  const mktCap=s.px*s.basic*1e6;                    // $ (basic)
+  const ev=mktCap+s.debt*1e6+s.pref*1e6-s.cash*1e6; // $
+  const evMnav=ev/btcNav;
+  const mcMnav=mktCap/btcNav;
+  const ampl=(s.debt+s.pref)*1e6/btcNav;            // = "amplification ratio" / CEBE drag
+  const navPerBasic=(btcNav-(s.debt+s.pref)*1e6+s.cash*1e6)/(s.basic*1e6);
+  const satsBasic=s.btc/(s.basic*1e6)*1e8;
+  const satsDil=s.btc/(s.dil*1e6)*1e8;
+  const cebeBtc=s.btc*(1-ampl);
+  const cebeSatsBasic=cebeBtc/(s.basic*1e6)*1e8;
+  return {s,btcNav,mktCap,ev,evMnav,mcMnav,ampl,navPerBasic,satsBasic,satsDil,cebeBtc,cebeSatsBasic};
+}
+function renderSnapshot(){
+  const m=currentMetrics();
+  const cards=[
+    ['BTC NAV',B(m.btcNav/1e6),'holdings × price'],
+    ['Market Cap',B(m.mktCap/1e6),'basic shares'],
+    ['Enterprise Value',B(m.ev/1e6),'+debt +pref −cash'],
+    ['EV mNAV',fmt(m.evMnav,2)+'x','EV ÷ BTC NAV'],
+    ['Mkt-Cap mNAV',fmt(m.mcMnav,2)+'x','MktCap ÷ BTC NAV'],
+    ['Amplification',pct(m.ampl*100),'(debt+pref) ÷ NAV'],
+    ['NAV / Basic Share',usd(m.navPerBasic,2),'liquidation value'],
+    ['Sats / Basic Share',fmt(m.satsBasic),'gross BTC/share'],
+    ['CEBE Sats / Share',fmt(m.cebeSatsBasic),'common-owned BTC'],
+    ['CEBE Drag',pct(m.ampl*100),'BTC spoken for'],
+  ];
+  $('snapCards').innerHTML=cards.map((c,i)=>
+    `<div class="card${i<3?' hl':''}"><div class="k">${c[0]}</div><div class="v">${c[1]}</div><div class="d" style="color:var(--muted)">${c[2]}</div></div>`).join('');
+  $('snapNote').innerHTML=`<b>mNAV</b> = market's premium to bitcoin value. <b>Amplification ratio (${pct(m.ampl*100)})</b> and <b>CEBE drag</b> are the same number, opposite framing: ${pct(m.ampl*100)} of the ${fmt(m.s.btc)} ₿ is claimed by preferred holders, leaving common with <b>${fmt(m.cebeBtc)} ₿</b> (CEBE).`;
+}
+
+/* ============================================================
+   HISTORY CHARTS
+   ============================================================ */
+let histChart, sataChart, projChart;
+const histViews={
+  'Holdings':r=>({label:'BTC Holdings',data:r.map(x=>x.holdings),color:COL.accent,fmt:v=>'₿'+fmt(v)}),
+  'Sats / Share':r=>({label:'Sats per Basic Share',data:r.map(x=>x.satsBasic),color:COL.teal,fmt:v=>fmt(v)+' sats'}),
+  'Shares':null, // special dual
+  'Acquisitions':null, // bar
+  'Avg Cost':r=>({label:'Avg Px Paid per BTC',data:r.map(x=>x.pxPerBtc),color:COL.purple,fmt:v=>usd(v)}),
+};
+function histRows(){
+  return HISTORY.map(h=>({date:h[0],btcAdded:h[1],pxPerBtc:h[2],holdings:h[3],basic:h[4],dil:h[5],
+    satsBasic:h[3]/(h[4]*1e6)*1e8, satsDil:h[3]/(h[5]*1e6)*1e8}));
+}
+let histActive='Holdings';
+function renderHistTabs(){
+  const keys=Object.keys(histViews);
+  $('histTabs').innerHTML=keys.map(k=>`<div class="tab${k===histActive?' active':''}" data-k="${k}">${k}</div>`).join('');
+  $('histTabs').querySelectorAll('.tab').forEach(t=>t.onclick=()=>{histActive=t.dataset.k;renderHistTabs();renderHist();});
+}
+function renderHist(){
+  const r=histRows();
+  const labels=r.map(x=>x.date.slice(2));
+  if(histChart) histChart.destroy();
+  const ctx=$('histChart');
+  let cfg;
+  if(histActive==='Shares'){
+    cfg={type:'line',data:{labels,datasets:[
+      {label:'Basic (M)',data:r.map(x=>x.basic),borderColor:COL.accent,backgroundColor:'transparent',tension:.25,borderWidth:2,pointRadius:2},
+      {label:'Diluted (M)',data:r.map(x=>x.dil),borderColor:COL.blue,backgroundColor:'transparent',tension:.25,borderWidth:2,pointRadius:2,borderDash:[5,4]},
+    ]},options:lineOpts(v=>fmt(v)+'M')};
+    $('histNote').innerHTML='Share count growth. SATA preferred raises do <b>not</b> add to these — only common ATM / conversions do.';
+  } else if(histActive==='Acquisitions'){
+    cfg={type:'bar',data:{labels,datasets:[
+      {label:'BTC added',data:r.map(x=>x.btcAdded),backgroundColor:COL.accent,yAxisID:'y'},
+      {label:'Holdings',type:'line',data:r.map(x=>x.holdings),borderColor:COL.teal,backgroundColor:'transparent',tension:.25,borderWidth:2,pointRadius:0,yAxisID:'y1'},
+    ]},options:{...lineOpts(v=>fmt(v)),scales:{
+      x:{grid:{color:'#1b2030'}},
+      y:{position:'left',grid:{color:'#1b2030'},ticks:{callback:v=>'₿'+fmt(v)}},
+      y1:{position:'right',grid:{display:false},ticks:{callback:v=>'₿'+fmt(v/1000)+'k'}}
+    }}};
+    $('histNote').innerHTML='Per-event BTC purchases (bars) and cumulative holdings (line). The two Jan 2026 mega-buys are the Semler Scientific acquisition closing.';
+  } else {
+    const v=histViews[histActive](r);
+    cfg={type:'line',data:{labels,datasets:[
+      {label:v.label,data:v.data,borderColor:v.color,backgroundColor:v.color+'22',fill:true,tension:.25,borderWidth:2,pointRadius:2}
+    ]},options:lineOpts(v.fmt)};
+    const notes={'Holdings':'Total bitcoin on balance sheet — 69 ₿ at launch to 16,500 ₿ today.',
+      'Sats / Share':'The real accretion metric: bitcoin owned per share. Rising = each share controls more BTC over time.',
+      'Avg Cost':'Average USD price paid per coin, per buy. Recent buys near $77–80k.'};
+    $('histNote').innerHTML=notes[histActive]||'';
+  }
+  histChart=new Chart(ctx,cfg);
+}
+function lineOpts(tickFmt){
+  return {responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:true,labels:{boxWidth:10,boxHeight:10}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+tickFmt(c.parsed.y)}}},
+    scales:{x:{grid:{color:'#1b2030'}},y:{grid:{color:'#1b2030'},ticks:{callback:tickFmt}}}};
+}
+
+/* ============================================================
+   SATA ENGINE
+   ============================================================ */
+function renderSata(){
+  const f=SATA_FACTS;
+  if(sataChart) sataChart.destroy();
+  sataChart=new Chart($('sataChart'),{type:'bar',data:{labels:SATA_WEEKS.map(w=>w[0]),
+    datasets:[{label:'BTC bought via SATA ATM',data:SATA_WEEKS.map(w=>w[1]),backgroundColor:COL.accent,borderRadius:6}]},
+    options:lineOpts(v=>'₿'+fmt(v))});
+  const dist=(f.price-f.threshold);
+  const cards=[
+    ['SATA Price',usd(f.price,3), dist>=0?'engine ON':'below $100 → standby'],
+    ['Engine',f.status, dist>=0?'issuing':'idle'],
+    ['Yield',pct(f.yield), '$'+f.perShareMo+'/sh·mo'],
+    ['2-Wk BTC',fmt(f.twoWk,0)+' ₿','via ATM'],
+    ['Confirmed BTC',fmt(f.confirmedBtc)+' ₿','from SATA (8-Ks)'],
+    ['Next Ex-Div',f.nextExDiv,'→ daily Jun 16'],
+  ];
+  $('sataCards').innerHTML=cards.map(c=>`<div class="card"><div class="k">${c[0]}</div><div class="v" style="font-size:17px">${c[1]}</div><div class="d" style="color:var(--muted)">${c[2]}</div></div>`).join('');
+  $('sataNote').innerHTML=`The ATM is a <b>reflexive engine</b>: SATA ≥ $100 → issue preferred → buy BTC → fund the 13% dividend. At $${f.price} it's on the threshold (${dist>=0?'+':''}${dist.toFixed(3)}). Your "SATA raise/month" assumption below drives the projection.`;
+}
+
+/* ============================================================
+   PROJECTION ENGINE  (monthly steps)
+   ============================================================ */
+function project(){
+  const m=currentMetrics(), a=assumptions(), s=m.s;
+  const months=a.yrs*12;
+  const mRet=Math.pow(1+a.cagr,1/12)-1;
+  const mnav0=m.evMnav, mnav1=a.mnavEnd;
+  const divRate=s.satadiv/100;
+  let btc=s.btc, px=s.btcpx, pref=s.pref*1e6, debt=s.debt*1e6, cash=s.cash*1e6;
+  let basic=s.basic*1e6, dil=s.dil*1e6;
+  const monthlyDil=Math.pow(1+a.dil,1/12)-1;
+  const rows=[];
+  // record t=0
+  rows.push(snap(0));
+  function snap(t){
+    const btcNav=btc*px;
+    const mnav=mnav0+(mnav1-mnav0)*(t/months);
+    const ev=mnav*btcNav;
+    const shares=a.base==='basic'?basic:dil;
+    const mktCap=ev-debt-pref+cash;
+    const sharePx=mktCap/shares;
+    const ampl=(debt+pref)/btcNav;
+    const sats=btc/shares*1e8;
+    const cebeSats=btc*(1-ampl)/shares*1e8;
+    return {t,px,btc,pref:pref/1e6,btcNav:btcNav/1e6,mnav,ampl,sats,cebeSats,mktCap:mktCap/1e6,sharePx};
+  }
+  for(let t=1;t<=months;t++){
+    px*=(1+mRet);
+    // SATA raise active this month?
+    const yr=Math.ceil(t/12);
+    const taperFac=Math.pow(1-a.taper,yr-1);
+    const monthIndexInYr=((t-1)%12);
+    const active = monthIndexInYr < a.active;          // first N months of each year "active"
+    let raise = active ? a.raise*1e6*taperFac : 0;
+    if(raise>0){ btc += raise/px; pref += raise; }
+    // dividends
+    const div = pref*divRate/12;
+    if(a.divMode==='pref') pref += div;                // funded by issuing more SATA
+    else if(a.divMode==='btc') btc -= div/px;          // sell BTC to pay
+    // ignore => no effect
+    // common dilution
+    basic*=(1+monthlyDil); dil*=(1+monthlyDil);
+    rows.push(snap(t));
+  }
+  return {rows,months,m,a};
+}
+
+let projActive='Share Price';
+const projViews=['Share Price','BTC / Share','mNAV','Amplification','Holdings & Pref'];
+function renderProjTabs(){
+  $('projTabs').innerHTML=projViews.map(k=>`<div class="tab${k===projActive?' active':''}" data-k="${k}">${k}</div>`).join('');
+  $('projTabs').querySelectorAll('.tab').forEach(t=>t.onclick=()=>{projActive=t.dataset.k;renderProjTabs();renderProj();});
+}
+function renderProj(){
+  const {rows,m,a}=project();
+  const last=rows[rows.length-1], first=rows[0];
+  // output cards
+  const priceCagr=Math.pow(last.sharePx/first.sharePx,1/a.yrs)-1;
+  const btcEnd=last.px;
+  const upside=last.sharePx/first.sharePx-1;
+  const cards=[
+    ['Projected ASST Price', usd(last.sharePx,2), `in ${a.yrs}y · ${a.base} sh`],
+    ['Price CAGR', pct(priceCagr*100), 'annualized'],
+    ['Total Return', (upside>=0?'+':'')+pct(upside*100), `vs ${usd(first.sharePx,2)} today`],
+    ['BTC Price @ horizon', usd(btcEnd), pct(a.cagr*100)+' CAGR'],
+    ['Holdings @ horizon', '₿'+fmt(last.btc), `+${fmt(last.btc-first.btc)} ₿`],
+    ['Amplification @ horizon', pct(last.ampl*100), `from ${pct(first.ampl*100)}`],
+    ['mNAV @ horizon', fmt(last.mnav,2)+'x', `from ${fmt(first.mnav,2)}x`],
+    ['Sats/Share @ horizon', fmt(last.sats), `from ${fmt(first.sats)}`],
+  ];
+  $('outCards').innerHTML=cards.map((c,i)=>`<div class="card${i===0?' hl':''}"><div class="k">${c[0]}</div><div class="v">${c[1]}</div><div class="d" style="color:var(--muted)">${c[2]}</div></div>`).join('');
+
+  // chart
+  const labels=rows.map(r=>r.t===0?'Now':'Y'+(r.t/12).toFixed(1).replace('.0',''));
+  const lab=rows.map(r=>(r.t/12).toFixed(2));
+  if(projChart) projChart.destroy();
+  let ds,fmtT;
+  if(projActive==='Share Price'){
+    ds=[{label:'ASST Share Price',data:rows.map(r=>r.sharePx),borderColor:COL.accent,backgroundColor:COL.accent+'22',fill:true}];
+    fmtT=v=>usd(v,2);
+  } else if(projActive==='BTC / Share'){
+    ds=[{label:'Sats/Share',data:rows.map(r=>r.sats),borderColor:COL.teal,backgroundColor:'transparent'},
+        {label:'CEBE Sats/Share',data:rows.map(r=>r.cebeSats),borderColor:COL.purple,backgroundColor:'transparent',borderDash:[5,4]}];
+    fmtT=v=>fmt(v)+' sats';
+  } else if(projActive==='mNAV'){
+    ds=[{label:'EV mNAV',data:rows.map(r=>r.mnav),borderColor:COL.blue,backgroundColor:'transparent'}];
+    fmtT=v=>fmt(v,2)+'x';
+  } else if(projActive==='Amplification'){
+    ds=[{label:'Amplification ratio',data:rows.map(r=>r.ampl*100),borderColor:COL.red,backgroundColor:COL.red+'18',fill:true}];
+    fmtT=v=>pct(v);
+  } else {
+    ds=[{label:'BTC NAV $M',data:rows.map(r=>r.btcNav),borderColor:COL.accent,backgroundColor:'transparent'},
+        {label:'Preferred $M',data:rows.map(r=>r.pref),borderColor:COL.purple,backgroundColor:'transparent'}];
+    fmtT=v=>M(v);
+  }
+  ds.forEach(d=>{d.tension=.2;d.borderWidth=2;d.pointRadius=0;});
+  const yType=a.scale==='log'&&projActive==='Share Price'?'logarithmic':'linear';
+  projChart=new Chart($('projChart'),{type:'line',data:{labels:lab,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{boxWidth:10}},tooltip:{callbacks:{title:c=>'Year '+c[0].label,label:c=>c.dataset.label+': '+fmtT(c.parsed.y)}}},
+      scales:{x:{grid:{color:'#1b2030'},title:{display:true,text:'Years from now'}},
+        y:{type:yType,grid:{color:'#1b2030'},ticks:{callback:fmtT}}}}});
+
+  const notes={
+    'Share Price':`Headline output. Price = (mNAV × BTC&nbsp;NAV − debt − preferred + cash) ÷ ${a.base} shares, with mNAV gliding ${fmt(first.mnav,2)}x → ${fmt(a.mnavEnd,2)}x. The gap between BTC's ${pct(a.cagr*100)} CAGR and ASST's ${pct(priceCagr*100)} CAGR is the combined effect of SATA amplification (boost) and mNAV compression (drag).`,
+    'BTC / Share':'Solid = gross bitcoin per share. Dashed = CEBE (what common actually owns after preferred claims). The widening gap is the cost of the preferred leverage.',
+    'mNAV':'The premium-to-NAV glide path you set. Compression is the single biggest swing factor on share price — try moving it.',
+    'Amplification':'Rises as SATA preferred stacks up faster than BTC NAV; falls when BTC rallies (fixed-$ claims shrink relative to NAV). Above ~70–80% the structure gets fragile.',
+    'Holdings & Pref':'BTC NAV (the asset) vs preferred claims (the senior liability). Common equity owns the spread between them.'
+  };
+  $('projNote').innerHTML=notes[projActive];
+
+  // table (annual)
+  const tb=$('projTable').querySelector('tbody');
+  tb.innerHTML=rows.filter(r=>r.t%12===0).map(r=>`<tr>
+    <td>${r.t===0?'Now':'Y'+r.t/12}</td><td>${usd(r.px)}</td><td>₿${fmt(r.btc)}</td><td>${fmt(r.pref)}</td>
+    <td>${fmt(r.btcNav)}</td><td>${fmt(r.mnav,2)}x</td><td>${pct(r.ampl*100)}</td>
+    <td>${fmt(r.sats)}</td><td>${fmt(r.cebeSats)}</td><td>${fmt(r.mktCap)}</td>
+    <td style="color:var(--accent);font-weight:700">${usd(r.sharePx,2)}</td></tr>`).join('');
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+function renderAll(){renderSnapshot();renderHist();renderSata();renderProj();}
+function labels(){
+  $('l_cagr').textContent=pct(+$('s_cagr').value);
+  $('l_raise').textContent='$'+$('s_raise').value+'M';
+  $('l_active').textContent=$('s_active').value;
+  $('l_taper').textContent=pct(+$('s_taper').value);
+  $('l_mnav').textContent=fmt(+$('s_mnav').value/100,2)+'x';
+  $('l_dil').textContent=pct(+$('s_dil').value);
+  $('l_yrs').textContent=$('s_yrs').value+' yrs';
+}
+['i_btc','i_btcpx','i_px','i_basic','i_dil','i_debt','i_pref','i_cash','i_satapx','i_satadiv']
+  .forEach(id=>$(id).addEventListener('input',()=>{renderSnapshot();renderProj();}));
+['s_cagr','s_raise','s_active','s_taper','s_mnav','s_dil','s_yrs']
+  .forEach(id=>$(id).addEventListener('input',()=>{labels();renderProj();}));
+document.querySelectorAll('.seg').forEach(seg=>seg.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  seg.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderProj();}));
+
+// build history table
+(function(){
+  const r=histRows();
+  $('histTable').querySelector('tbody').innerHTML=r.map(x=>`<tr>
+    <td>${x.date}</td><td>₿${fmt(x.btcAdded,2)}</td><td>${usd(x.pxPerBtc)}</td><td>₿${fmt(x.holdings)}</td>
+    <td>${fmt(x.basic,2)}</td><td>${fmt(x.dil,2)}</td><td>${fmt(x.satsBasic)}</td></tr>`).join('');
+})();
+
+renderHistTabs();renderProjTabs();labels();renderAll();
+</script>
+</body>
+</html>
