@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOTP Valuation</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --row: #0e1424;
+    --border: #1a2236;
+    --text: #e6eaf2;
+    --muted: #8a93a8;
+    --green: #34d399;
+    --input-bg: #060912;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+  }
+  .table { width: 100%; max-width: 1080px; }
+  .header, .row, .total {
+    display: grid;
+    grid-template-columns: 2fr 1.3fr 1.1fr 1.3fr;
+    align-items: center;
+  }
+  .header {
+    padding: 16px 8px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .header div:nth-child(1) { text-align: left; }
+  .header div:nth-child(n+2) { text-align: right; }
+  .row {
+    padding: 18px 8px;
+    border-bottom: 1px solid var(--border);
+    background: var(--row);
+  }
+  .seg { display: flex; align-items: center; gap: 14px; font-size: 16px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  .rev, .ev { text-align: right; font-size: 16px; }
+  .ev { color: var(--green); font-weight: 600; }
+  .mult-cell { text-align: right; }
+  input {
+    width: 84px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 16px;
+    text-align: center;
+    padding: 8px 0;
+    outline: none;
+  }
+  input:focus { border-color: var(--green); }
+  input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+  .total {
+    padding: 22px 8px;
+    font-size: 16px;
+    font-weight: 700;
+    border-top: 1px solid var(--border);
+  }
+  .total .seg { font-size: 16px; }
+  .total .rev { font-weight: 700; }
+  .total .mult-cell { color: var(--muted); }
+  .total .ev { color: var(--green); font-size: 17px; }
+</style>
+</head>
+<body>
+<div class="table">
+  <div class="header">
+    <div>SEGMENT</div>
+    <div>2030 REV ($B)</div>
+    <div>MULTIPLE (X)</div>
+    <div>IMPLIED EV ($B)</div>
+  </div>
+  <div id="rows"></div>
+  <div class="total">
+    <div class="seg">Total</div>
+    <div class="rev" id="totalRev">—</div>
+    <div class="mult-cell">--</div>
+    <div class="ev" id="totalEv">—</div>
+  </div>
+</div>
+
+<script>
+const data = [
+  { name: "EWS",         color: "#a855f7", rev: 350, mult: 20 },
+  { name: "LLM",         color: "#ec4899", rev: 90,  mult: 40 },
+  { name: "MacroHard",   color: "#f0b429", rev: 55,  mult: 50 },
+  { name: "Starlink",    color: "#22c55e", rev: 120, mult: 20 },
+  { name: "Starlink DTC",color: "#22c55e", rev: 50,  mult: 30 },
+  { name: "X Payments",  color: "#3b82f6", rev: 35,  mult: 15 },
+  { name: "X Revenue",   color: "#3b82f6", rev: 32,  mult: 10 },
+  { name: "Launch",      color: "#f97316", rev: 16,  mult: 15 },
+  { name: "NASA",        color: "#ef4444", rev: 8,   mult: 15 },
+];
+
+const rowsEl = document.getElementById("rows");
+
+function fmtB(n) {
+  return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+
+function render() {
+  rowsEl.innerHTML = "";
+  let totalRev = 0, totalEv = 0;
+  data.forEach((d, i) => {
+    const ev = d.rev * d.mult;
+    totalRev += d.rev;
+    totalEv += ev;
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <div class="seg"><span class="dot" style="background:${d.color}"></span>${d.name}</div>
+      <div class="rev">${d.rev.toLocaleString("en-US",{minimumFractionDigits:1,maximumFractionDigits:1})}</div>
+      <div class="mult-cell"><input type="number" min="0" step="1" value="${d.mult}" data-i="${i}"></div>
+      <div class="ev" id="ev-${i}">${fmtB(ev)}</div>
+    `;
+    rowsEl.appendChild(row);
+  });
+  updateTotals();
+}
+
+function updateTotals() {
+  let totalRev = 0, totalEv = 0;
+  data.forEach((d, i) => {
+    const ev = d.rev * d.mult;
+    totalRev += d.rev;
+    totalEv += ev;
+    const cell = document.getElementById("ev-" + i);
+    if (cell) cell.textContent = fmtB(ev);
+  });
+  document.getElementById("totalRev").textContent =
+    totalRev.toLocaleString("en-US",{minimumFractionDigits:1,maximumFractionDigits:1});
+  document.getElementById("totalEv").textContent =
+    totalEv >= 1000 ? "$" + (totalEv/1000).toFixed(2) + "T" : fmtB(totalEv);
+}
+
+rowsEl.addEventListener("input", e => {
+  if (e.target.tagName === "INPUT") {
+    const i = +e.target.dataset.i;
+    data[i].mult = parseFloat(e.target.value) || 0;
+    updateTotals();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
