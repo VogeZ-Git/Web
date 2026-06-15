@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>EchoStar (SATS) — Sum-of-Parts NAV Model</title>
+<style>
+  :root{
+    --bg:#0b0d10; --card:#13161b; --border:#23272f; --muted:#8a93a1;
+    --fg:#e7ecf3; --primary:#7cf0a0; --accent:#a78bfa; --danger:#f87171; --ok:#4ade80;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif}
+  .display{font-family:"SF Pro Display","Inter",ui-sans-serif,sans-serif;font-feature-settings:"tnum"}
+  .wrap{max-width:1280px;margin:0 auto;padding:32px 24px 64px}
+  header{display:flex;justify-content:space-between;align-items:end;gap:16px;border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:24px}
+  header .t{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  header h1{margin:4px 0 0;font-size:22px;font-weight:600}
+  .grid{display:grid;gap:24px;grid-template-columns:1.1fr 1fr}
+  @media (max-width:960px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px}
+  .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .row{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap}
+  .big{font-size:44px;font-weight:600;letter-spacing:-.02em;color:var(--primary)}
+  .big2{font-size:32px;font-weight:600;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  input[type=range]{width:100%;accent-color:var(--primary);margin-top:18px}
+  .ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+  .stat{border:1px solid var(--border);background:#181c22;border-radius:8px;padding:10px 12px}
+  .stat .l{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+  .stat .v{font-size:18px;font-weight:600;margin-top:2px}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px}
+  td{padding:8px 0;border-top:1px solid #1d2128}
+  td.r{text-align:right;font-variant-numeric:tabular-nums}
+  tr.hl td{background:rgba(124,240,160,.05)}
+  .neg{color:var(--danger)}
+  .pos{color:var(--primary);font-weight:600}
+  .b{color:var(--fg);font-weight:600}
+  .pct.prem{color:var(--danger)}
+  .pct.disc{color:var(--ok)}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+  .field input{width:100%;background:#0e1115;border:1px solid var(--border);color:var(--fg);border-radius:6px;padding:8px 10px;font-family:inherit;font-size:14px}
+  .field input:focus{outline:none;border-color:var(--primary)}
+  .note{font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.55}
+  section{display:flex;flex-direction:column;gap:18px}
+  .ev{color:var(--primary);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="t">NASDAQ: SATS · EchoStar Corp.</div>
+      <h1>Sum-of-Parts NAV Model — June 2026</h1>
+    </div>
+    <div class="t">Interactive · edit any field</div>
+  </header>
+
+  <div class="grid">
+    <section>
+      <div class="card">
+        <div class="row">
+          <div>
+            <div class="eyebrow">SpaceX implied valuation</div>
+            <div class="big display" id="spxVal">$551B</div>
+            <div class="sub" id="spxSub"></div>
+          </div>
+          <div style="text-align:right">
+            <div class="eyebrow">SATS NAV / share</div>
+            <div class="big2 display" id="navPs">$0</div>
+            <div class="sub" id="premLine"></div>
+          </div>
+        </div>
+        <input type="range" id="spxSlider" min="200" max="1500" step="10" value="551" />
+        <div class="ticks">
+          <span>$200B</span><span>$400B</span><span>$550B deal</span><span>$1T</span><span>$1.5T</span>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="l">SpaceX stake value</div><div class="v display" id="stakeV"></div></div>
+          <div class="stat"><div class="l">Equity NAV</div><div class="v display" style="color:var(--primary)" id="eqNav"></div></div>
+          <div class="stat"><div class="l">Market cap</div><div class="v display" id="mcap"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="eyebrow">NAV bridge</div>
+        <table id="bridge"></table>
+      </div>
+
+      <div class="card">
+        <div class="eyebrow">Reverse-implied SpaceX valuation</div>
+        <p class="sub" style="margin-top:8px" id="reverse"></p>
+      </div>
+    </section>
+
+    <section>
+      <div class="card">
+        <div class="eyebrow">Holdings & deal proceeds ($M)</div>
+        <div class="fields" id="f1"></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Liabilities & capital structure ($M)</div>
+        <div class="fields" id="f2"></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">SpaceX assumptions</div>
+        <div class="fields" id="f3"></div>
+        <p class="note">SpaceX equity received is capped at $11B at the deal price of $212 (~51.9M shares). Total SpaceX diluted shares of ~2.6B implies a deal-time valuation of ~$551B.</p>
+      </div>
+      <p class="note">Sources: SATS 10-K (FY2025, filed Mar 2 2026); Q1 2026 10-Q (May 11 2026); FCC approval of $40B spectrum sale (May 12 2026); press reports on SpaceX share-count and pricing. Operating-business values are illustrative — edit them. Back-of-envelope sum-of-parts model, not investment advice.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+const I = {
+  sharesOutstandingM: 288, marketPrice: 108.7,
+  cashOnHand: 3160, attCashProceeds: 22650, spacexCashProceeds: 9000,
+  spacexShareCount: 51.9, spacexDealPrice: 212, spacexDealShares: 2600,
+  payTvValue: 8500, wirelessValue: 2000, hughesValue: 500,
+  totalDebt: 26400, sellerNotes: 9821, taxLeakage: 2500,
+};
+let spxValB = 551;
+
+const F1 = [
+  ["Cash on hand","cashOnHand"],["AT&T cash","attCashProceeds"],
+  ["SpaceX cash","spacexCashProceeds"],["SpaceX shares received (M)","spacexShareCount",0.1],
+  ["Pay-TV value","payTvValue"],["Wireless value","wirelessValue"],["Hughes value","hughesValue"],
+];
+const F2 = [
+  ["Total debt","totalDebt"],["Seller notes (memo)","sellerNotes"],
+  ["Tax + deal costs","taxLeakage"],["Shares outstanding (M)","sharesOutstandingM"],
+];
+const F3 = [
+  ["SpaceX total dil. shares (M)","spacexDealShares"],
+  ["SpaceX deal price ($)","spacexDealPrice"],
+  ["SATS market price ($)","marketPrice",0.1],
+];
+
+function mkFields(host,defs){
+  defs.forEach(([label,key,step])=>{
+    const w=document.createElement("div");w.className="field";
+    w.innerHTML=`<label>${label}</label><input type="number" step="${step||1}" value="${I[key]}" data-k="${key}">`;
+    w.querySelector("input").addEventListener("input",e=>{I[key]=Number(e.target.value);render();});
+    host.appendChild(w);
+  });
+}
+mkFields(document.getElementById("f1"),F1);
+mkFields(document.getElementById("f2"),F2);
+mkFields(document.getElementById("f3"),F3);
+
+const slider=document.getElementById("spxSlider");
+slider.addEventListener("input",e=>{spxValB=Number(e.target.value);render();});
+
+const fmtB=m=>`$${(m/1000).toLocaleString(undefined,{maximumFractionDigits:2})}B`;
+const fmtUsd=(n,d=2)=>`$${n.toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d})}`;
+
+function render(){
+  const spxPx = (spxValB*1000)/I.spacexDealShares;
+  const stake = spxPx * I.spacexShareCount;
+  const gross = I.cashOnHand+I.attCashProceeds+I.spacexCashProceeds+stake+I.payTvValue+I.wirelessValue+I.hughesValue;
+  const liab = I.totalDebt + I.taxLeakage;
+  const eq = gross - liab;
+  const nps = eq / I.sharesOutstandingM;
+  const mcap = I.marketPrice * I.sharesOutstandingM;
+  const prem = (I.marketPrice/nps - 1) * 100;
+  const impPx = (mcap - (gross - stake - liab)) / I.spacexShareCount;
+  const impVal = impPx * I.spacexDealShares / 1000;
+
+  document.getElementById("spxVal").textContent = `$${spxValB.toLocaleString()}B`;
+  document.getElementById("spxSub").textContent = `= ${fmtUsd(spxPx,0)} / SpaceX share · deal struck at $212 (~$551B)`;
+  document.getElementById("navPs").textContent = fmtUsd(nps);
+  const pl=document.getElementById("premLine");
+  pl.textContent = `Market ${fmtUsd(I.marketPrice)} · ${prem>0?"+":""}${prem.toFixed(1)}% ${prem>0?"premium":"discount"} to NAV`;
+  pl.className = "sub pct " + (prem>0?"prem":"disc");
+  document.getElementById("stakeV").textContent = fmtB(stake);
+  document.getElementById("eqNav").textContent = fmtB(eq);
+  document.getElementById("mcap").textContent = fmtB(mcap);
+
+  const rows = [
+    ["Cash, restricted & marketable securities", I.cashOnHand],
+    ["AT&T spectrum sale — cash", I.attCashProceeds],
+    ["SpaceX deal — cash portion", I.spacexCashProceeds],
+    [`SpaceX equity stake (${I.spacexShareCount}M sh × ${fmtUsd(spxPx,0)})`, stake, {hl:true}],
+    ["Pay-TV (DISH + Sling)", I.payTvValue],
+    ["Wireless (Boost Mobile)", I.wirelessValue],
+    ["Hughes broadband", I.hughesValue],
+    ["Gross asset value", gross, {b:true}],
+    ["Total debt principal", -I.totalDebt],
+    ["Tax leakage & deal costs (est.)", -I.taxLeakage],
+    ["Equity NAV", eq, {b:true,accent:true}],
+    ["÷ Shares outstanding", I.sharesOutstandingM, {raw:`${I.sharesOutstandingM.toFixed(0)}M`}],
+    ["NAV per share", nps, {b:true,accent:true,ps:true}],
+  ];
+  const tb=document.getElementById("bridge");
+  tb.innerHTML = "<tbody>"+rows.map(([l,v,o])=>{
+    o=o||{};
+    const cls=[o.hl?"hl":""].join(" ");
+    const vcls=[o.accent?"pos":"",o.b?"b":"",v<0?"neg":""].join(" ");
+    const txt=o.raw?o.raw:(o.ps?fmtUsd(v):(v<0?`(${fmtB(-v)})`:fmtB(v)));
+    return `<tr class="${cls}"><td>${l}</td><td class="r ${vcls}">${txt}</td></tr>`;
+  }).join("")+"</tbody>";
+
+  document.getElementById("reverse").innerHTML =
+    `Holding every other assumption constant, the market price of <span class="b">${fmtUsd(I.marketPrice)}</span> implies SpaceX is worth <span class="ev">${fmtUsd(impPx,0)} / share</span> (~<span class="ev">$${impVal.toFixed(0)}B</span> enterprise value) — vs. $212 in the deal docs.`;
+}
+render();
+</script>
+</body>
+</html>
