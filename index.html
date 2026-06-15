@@ -6,221 +6,225 @@
     <title>Vogez Investor Suite</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230b0f1a'/%3E%3Cpath d='M20,70 L35,50 L50,60 L65,35 L80,45' stroke='%233b82f6' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='70' r='4' fill='%233b82f6'/%3E%3Ccircle cx='35' cy='50' r='4' fill='%233b82f6'/%3E%3Ccircle cx='50' cy='60' r='4' fill='%233b82f6'/%3E%3Ccircle cx='65' cy='35' r='4' fill='%233b82f6'/%3E%3Ccircle cx='80' cy='45' r='4' fill='%233b82f6'/%3E%3C/svg%3E">
     <style>
-        :root { 
-            --primary: #3b82f6; 
-            --bg: #0b0f1a; 
-            --card: #161e2d; 
-            --text: #e2e8f0; 
+        :root {
+            --primary: #3b82f6;
+            --bg: #0b0f1a;
+            --card: #161e2d;
+            --text: #e2e8f0;
             --text-dim: #94a3b8;
             --border: #2d3748;
         }
-        body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            background: var(--bg); 
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
             background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0b0f1a 100%);
-            color: var(--text); 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+            background-attachment: fixed;
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 40px 20px;
         }
-        .container { width: 100%; max-width: 1000px; text-align: center; }
-        
-        h1 { font-size: 2.2rem; margin: 0; color: #fff; }
-        .subtitle { color: var(--text-dim); margin: 8px 0 30px 0; font-size: 1rem; }
+        .container { width: 100%; max-width: 760px; }
 
-        /* Row of 3 Configuration */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 15px; 
+        h1 { font-size: 2rem; margin: 0; color: #fff; text-align: center; }
+        .subtitle { color: var(--text-dim); margin: 8px 0 32px 0; font-size: 0.95rem; text-align: center; }
+
+        .cat {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin: 26px 0 10px 4px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
         }
+        .cat:first-of-type { margin-top: 0; }
 
-        .portal-card {
+        .list { display: flex; flex-direction: column; gap: 8px; }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
             background: var(--card);
-            padding: 20px 15px;
-            border-radius: 12px;
+            padding: 12px 18px;
+            border-radius: 10px;
             border: 1px solid var(--border);
             text-decoration: none;
             color: var(--text);
-            transition: all 0.2s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            transition: border-color 0.15s ease, background 0.15s ease;
         }
-        .portal-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--primary);
-            background: #1c2537;
+        .row:hover { border-color: var(--primary); background: #1c2537; }
+
+        .icon { font-size: 1.4rem; width: 28px; text-align: center; flex-shrink: 0; opacity: 0.9; }
+
+        .meta { flex: 1; min-width: 0; }
+        .meta h2 { font-size: 0.98rem; margin: 0; color: #fff; font-weight: 600; }
+        .meta p {
+            color: var(--text-dim);
+            font-size: 0.78rem;
+            margin: 2px 0 0 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .icon { font-size: 1.8rem; margin-bottom: 10px; opacity: 0.9; }
-        h2 { font-size: 1.1rem; margin: 5px 0; white-space: nowrap; }
-        .card-desc { 
-            color: var(--text-dim); 
-            font-size: 0.8rem; 
-            line-height: 1.4; 
-            margin: 5px 0 15px 0;
-            min-height: 40px; /* Keeps card heights consistent */
-        }
-        
         .btn {
-            background: transparent;
+            flex-shrink: 0;
             color: var(--primary);
-            padding: 6px 16px;
+            padding: 5px 14px;
             border-radius: 6px;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             border: 1px solid var(--primary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .portal-card:hover .btn {
-            background: var(--primary);
-            color: white;
-        }
+        .row:hover .btn { background: var(--primary); color: #fff; }
 
-        /* Responsive: Switch to 2 columns on tablets, 1 on mobile */
-        @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+        @media (max-width: 520px) {
+            .meta p { white-space: normal; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Vogez Investor Suite</h1>
         <p class="subtitle">Institutional-grade valuation & risk terminal</p>
-        
-        <div class="grid">
-            <a href="treasury.html" class="portal-card">
-                <div class="icon">₿</div>
-                <h2>Treasury Model</h2>
-                <p class="card-desc">BTC acquisition & share dilution projection.</p>
-                <div class="btn">Open</div>
-            </a>
 
-            <a href="sotp.html" class="portal-card">
+        <div class="cat">Valuation & SOTP</div>
+        <div class="list">
+            <a href="sotp.html" class="row">
                 <div class="icon">⛏️</div>
-                <h2>SOTP Valuation</h2>
-                <p class="card-desc">Mining & energy asset sum-of-parts analysis.</p>
+                <div class="meta"><h2>SOTP Valuation</h2><p>Mining & energy asset sum-of-parts analysis.</p></div>
                 <div class="btn">Open</div>
             </a>
-
-            <a href="website.html" class="portal-card">
-                <div class="icon">⚖️</div>
-                <h2>Margin Risk</h2>
-                <p class="card-desc">Liquidation thresholds & collateral health.</p>
+            <a href="spacex_sotp.html" class="row">
+                <div class="icon">🚀</div>
+                <div class="meta"><h2>SpaceX SOTP</h2><p>Sum-of-parts valuation across Starlink, Launch, xAI & X segments.</p></div>
                 <div class="btn">Open</div>
             </a>
-
-            <a href="degiro.html" class="portal-card">
-                <div class="icon">🏦</div>
-                <h2>DEGIRO Margin</h2>
-                <p class="card-desc">Stress testing, price shocks & risk scans.</p>
+            <a href="TeslaSotp.html" class="row">
+                <div class="icon">🔋</div>
+                <div class="meta"><h2>Tesla SOTP</h2><p>15-segment sum-of-parts case across auto, energy, AI & robotics.</p></div>
                 <div class="btn">Open</div>
             </a>
-
-            <a href="crypto-risk-dashboard.html" class="portal-card">
-                <div class="icon">🛡️</div>
-                <h2>Risk Dashboard</h2>
-                <p class="card-desc">Drawdown analytics & volatility monitoring.</p>
-                <div class="btn">Open</div>
-            </a>
-
-            <a href="retirementmodel.html" class="portal-card">
-                <div class="icon">📈</div>
-                <h2>Retirement</h2>
-                <p class="card-desc">Wealth projection & asset appreciation.</p>
-                <div class="btn">Open</div>
-            </a>
-
-            <a href="Xusers.html" class="portal-card">
-                <div class="icon">📊</div>
-                <h2>X Analytics</h2>
-                <p class="card-desc">Sentiment metrics & community growth.</p>
-                <div class="btn">Open</div>
-            </a>
-
-            <a href="https://mstr-model.netlify.app/" class="portal-card">
-                <div class="icon">💼</div>
-                <h2>Core Bag CAGR</h2>
-                <p class="card-desc">Growth rate analysis for MSTR, BTC & TSLA.</p>
-                <div class="btn">Open</div>               
-            </a>
-
-            <a href="minermodel.html" class="portal-card">
+            <a href="minermodel.html" class="row">
                 <div class="icon">⚙️</div>
-                <h2>IA MINER MODEL v5.0</h2>
-                <p class="card-desc">Institutional Infrastructure Arbitrage Matrix.</p>
+                <div class="meta"><h2>IA MINER MODEL v5.0</h2><p>Institutional Infrastructure Arbitrage Matrix.</p></div>
                 <div class="btn">Open</div>
             </a>
+            <a href="treasury.html" class="row">
+                <div class="icon">₿</div>
+                <div class="meta"><h2>Treasury Model</h2><p>BTC acquisition & share dilution projection.</p></div>
+                <div class="btn">Open</div>
+            </a>
+        </div>
 
-            <a href="themes.html" class="portal-card">
-                <div class="icon">🌐</div>
-                <h2>2030 Strategic Vision</h2>
-                <p class="card-desc">A 3x3 analysis of the nine core themes shaping the decade.</p>
+        <div class="cat">Risk & Margin</div>
+        <div class="list">
+            <a href="website.html" class="row">
+                <div class="icon">⚖️</div>
+                <div class="meta"><h2>Margin Risk</h2><p>Liquidation thresholds & collateral health.</p></div>
                 <div class="btn">Open</div>
             </a>
-            <a href="rdj.html" class="portal-card">
-                <div class="icon">📜</div>
-                <h2>Rule Du Jour</h2>
-                <p class="card-desc">Curated compendium of investing rules.</p>
+            <a href="degiro.html" class="row">
+                <div class="icon">🏦</div>
+                <div class="meta"><h2>DEGIRO Margin</h2><p>Stress testing, price shocks & risk scans.</p></div>
                 <div class="btn">Open</div>
             </a>
-			<a href="coveredcall.html" class="portal-card">
-			<div class="icon">Δ</div>
-			<h2>10Δ Covered Call</h2>
-			<p class="card-desc">Decision engine for managing & rolling 10Δ covered calls.</p>
-			<div class="btn">Open</div>
-			</a>
+            <a href="crypto-risk-dashboard.html" class="row">
+                <div class="icon">🛡️</div>
+                <div class="meta"><h2>Risk Dashboard</h2><p>Drawdown analytics & volatility monitoring.</p></div>
+                <div class="btn">Open</div>
+            </a>
+        </div>
 
-			<a href="CRCL1.html" class="portal-card">
+        <div class="cat">Positions & Tracking</div>
+        <div class="list">
+            <a href="CRCL1.html" class="row">
                 <div class="icon">🔵</div>
-                <h2>CIRCLE Position I</h2>
-                <p class="card-desc">Primary position tracking & allocation metrics.</p>
+                <div class="meta"><h2>CIRCLE Position I</h2><p>Primary position tracking & allocation metrics.</p></div>
                 <div class="btn">Open</div>
             </a>
-
-            <a href="CRCL2.html" class="portal-card">
+            <a href="CRCL2.html" class="row">
                 <div class="icon">🔵</div>
-                <h2>CIRCLE Position II</h2>
-                <p class="card-desc">Secondary exposure analysis & risk monitoring.</p>
+                <div class="meta"><h2>CIRCLE Position II</h2><p>Secondary exposure analysis & risk monitoring.</p></div>
                 <div class="btn">Open</div>
             </a>
-			<a href="ibit.html" class="portal-card">
-			    <div class="icon">🪙</div>
-			    <h2>IBIT Position</h2>
-			    <p class="card-desc">BlackRock Bitcoin ETF allocation & basis tracking.</p>
-			    <div class="btn">Open</div>
-			</a>
-			<a href="DCA.html" class="portal-card">
-			    <div class="icon">💸</div>
-			    <h2>DCA / Digital Credit</h2>
-			    <p class="card-desc">Strategic dollar cost averaging for yield & preferred dividends.</p>
-			    <div class="btn">Open</div>
-			</a>
-			<a href="robotaxi.html" class="portal-card">
-			    <div class="icon">🚕</div>
-			    <h2>Robotaxi Fleet</h2>
-			    <p class="card-desc">Tesla Network financial projections & fleet unit economics.</p>
-			    <div class="btn">Open</div>
-			</a>
-			<a href="21charts.html" class="portal-card">
-			    <div class="icon">🖼️</div>
-			    <h2>21 Charts</h2>
-			    <p class="card-desc">Cross-asset visual summary of 21 core tickers as of April 2026.</p>
-			    <div class="btn">Open</div>
-			</a>
-			<a href="roboprogress.html" class="portal-card">
+            <a href="ibit.html" class="row">
+                <div class="icon">🪙</div>
+                <div class="meta"><h2>IBIT Position</h2><p>BlackRock Bitcoin ETF allocation & basis tracking.</p></div>
+                <div class="btn">Open</div>
+            </a>
+            <a href="coveredcall.html" class="row">
+                <div class="icon">Δ</div>
+                <div class="meta"><h2>10Δ Covered Call</h2><p>Decision engine for managing & rolling 10Δ covered calls.</p></div>
+                <div class="btn">Open</div>
+            </a>
+            <a href="DCA.html" class="row">
+                <div class="icon">💸</div>
+                <div class="meta"><h2>DCA / Digital Credit</h2><p>Strategic dollar cost averaging for yield & preferred dividends.</p></div>
+                <div class="btn">Open</div>
+            </a>
+        </div>
+
+        <div class="cat">Tesla / Robotaxi</div>
+        <div class="list">
+            <a href="robotaxi.html" class="row">
+                <div class="icon">🚕</div>
+                <div class="meta"><h2>Robotaxi Fleet</h2><p>Tesla Network financial projections & fleet unit economics.</p></div>
+                <div class="btn">Open</div>
+            </a>
+            <a href="roboprogress.html" class="row">
                 <div class="icon">🛣️</div>
-                <h2>Robotaxi Roadmap</h2>
-                <p class="card-desc">Milestone tracking for FSD rollout & network expansion phases.</p>
+                <div class="meta"><h2>Robotaxi Roadmap</h2><p>Milestone tracking for FSD rollout & network expansion phases.</p></div>
+                <div class="btn">Open</div>
+            </a>
+        </div>
+
+        <div class="cat">Projection & Growth</div>
+        <div class="list">
+            <a href="https://mstr-model.netlify.app/" class="row">
+                <div class="icon">💼</div>
+                <div class="meta"><h2>Core Bag CAGR</h2><p>Growth rate analysis for MSTR, BTC & TSLA.</p></div>
+                <div class="btn">Open</div>
+            </a>
+            <a href="retirementmodel.html" class="row">
+                <div class="icon">📈</div>
+                <div class="meta"><h2>Retirement</h2><p>Wealth projection & asset appreciation.</p></div>
+                <div class="btn">Open</div>
+            </a>
+        </div>
+
+        <div class="cat">Research & Reference</div>
+        <div class="list">
+            <a href="themes.html" class="row">
+                <div class="icon">🌐</div>
+                <div class="meta"><h2>2030 Strategic Vision</h2><p>A 3x3 analysis of the nine core themes shaping the decade.</p></div>
+                <div class="btn">Open</div>
+            </a>
+            <a href="21charts.html" class="row">
+                <div class="icon">🖼️</div>
+                <div class="meta"><h2>21 Charts</h2><p>Cross-asset visual summary of 21 core tickers as of April 2026.</p></div>
+                <div class="btn">Open</div>
+            </a>
+            <a href="Xusers.html" class="row">
+                <div class="icon">📊</div>
+                <div class="meta"><h2>X Analytics</h2><p>Sentiment metrics & community growth.</p></div>
+                <div class="btn">Open</div>
+            </a>
+            <a href="rdj.html" class="row">
+                <div class="icon">📜</div>
+                <div class="meta"><h2>Rule Du Jour</h2><p>Curated compendium of investing rules.</p></div>
                 <div class="btn">Open</div>
             </a>
         </div>
     </div>
 </body>
 </html>
-
-
